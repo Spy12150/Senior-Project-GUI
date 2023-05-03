@@ -58,21 +58,27 @@ class Board:
             else:
                 return False
         if(piece[1] == "R"):
-            print("rook move")
             if(start_row-end_row == 0):
-                print("side side")
-                print(end_col - start_col)
-                for i in range(0, (end_col - start_col)):
-                    if(self.board[start_row][start_col + i] != '' and i != 0):
-                        return False
+
+                if(end_col - start_col >= 0):
+                    for i in range(0, (end_col - start_col)):
+                        if(self.board[start_row][start_col + i] != '' and i != 0):
+                            return False
+                else:
+                    for i in range(0, (start_col - end_col)):
+                        if(self.board[start_row][start_col - i] != '' and i != 0):
+                            return False
             elif(start_col-end_col == 0):
                 print("up down")
-                print(start_row - end_row)
-                for i in range(0, (end_row - start_row)):
-                    if(self.board[start_row - i][start_col] != '' and i != 0):
-                        return False
+                if(end_row - start_row >= 0):
+                    for i in range(0, (end_row - start_row)):
+                        if(self.board[start_row + i][start_col] != '' and i != 0):
+                            return False
+                else:
+                    for i in range(0, (start_row - end_row)):
+                        if(self.board[start_row - i][start_col] != '' and i != 0):
+                            return False
             else:
-                print("Invalid Rook")
                 return False
             
             return True
@@ -97,7 +103,6 @@ class Board:
         end_col = ord(move[2]) - ord('a')
         end_row = 7- (int(move[3]) - 1)
 
-        print(start_row)
 
 
         if str(start_col) not in '01234567' or str(end_col) not in '01234567' or str(start_row) not in '01234567' or str(end_row) not in '01234567':
