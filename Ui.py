@@ -1,4 +1,6 @@
+from ast import Import
 import pygame
+from Board import Board
 
 # Set up the Pygame window
 pygame.init()
@@ -28,17 +30,7 @@ images["bN"] = pygame.transform.scale(pygame.image.load('data/imgs/bN.png'), (64
 images["bP"] = pygame.transform.scale(pygame.image.load('data/imgs/bP.png'), (64, 64))
 
 # Define the chess board
-board = [
-    ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
-    ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-    ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
-]
-
+board = Board()
 # Define the square size and font
 SQUARE_SIZE = HEIGHT // 8
 FONT = pygame.font.SysFont('calibri', 30)
@@ -49,14 +41,14 @@ def draw_board():
         for col in range(8):
             color = WHITE if (row + col) % 2 == 0 else GRAY
             pygame.draw.rect(win, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-            piece = board[row][col]
+            piece = board.board[row][col]
             if piece != '':
                 win.blit(images[piece], (col*SQUARE_SIZE, row*SQUARE_SIZE))
 
 # Draw the coordinates on the board
 def draw_coordinates():
     for i in range(8):
-        text = FONT.render(str(i+1), True, BLACK)
+        text = FONT.render(str(9-(i+1)), True, BLACK)
         win.blit(text, (5, i*SQUARE_SIZE+20))
         text = FONT.render(chr(97+i), True, BLACK)
         win.blit(text, (i*SQUARE_SIZE+20, HEIGHT-35))
@@ -64,17 +56,36 @@ def draw_coordinates():
 # Main game loop
 running = True
 
+print("enter moves in the notation: e2e4 (start pos + end pos_")
+turn = "w"
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-            
-        
-    # Draw the board and pieces
+
+     # Draw the board and pieces
     draw_board()
     draw_coordinates()
 
     # Check if the game is over
     pygame.display.update()
+            
+
+    
+    Moved = False
+    while(not Moved):
+         move = str(input("what move do you want to make: "))
+         Moved = board.move(move, turn)
+        
+
+    if(turn == "w"):
+        turn = "b"
+    else:
+        turn = "w"
+
+    print("turn: ")
+    print(turn)
+   
 
 pygame.quit()
