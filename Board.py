@@ -25,55 +25,67 @@ class Board:
         if(piece[1] == "P"):
             if(color == "w"):
                 if(self.board[end_row][end_col] == '' and start_row-end_row == 1 and start_col == end_col):
+                    self.enPassantable = None
                     return True
                 if(self.board[end_row][end_col] == '' and self.board[end_row+1][end_col] == '' and start_row-end_row == 2 and start_col == end_col and start_row == 6):
                     self.enPassantable = end_col
                     return True
                 if(self.board[end_row][end_col] != '' and start_row-end_row == 1 and (start_col - 1 == end_col or start_col + 1 == end_col)):
+                    self.enPassantable = None
                     return True
                 if end_row == start_row - 1 and abs(end_col - start_col) == 1 and self.board[end_row][end_col] == '' and end_col == self.enPassantable:
+                    self.enPassantable = None
                     self.board[start_row][end_col] = ''
                     return True
             elif(color == "b"):
                 if(self.board[end_row][end_col] == '' and start_row-end_row == -1 and start_col == end_col):
+                    self.enPassantable = None
                     return True
                 if(self.board[end_row][end_col] == '' and self.board[end_row-1][end_col] == '' and start_row-end_row == -2 and start_col == end_col and start_row == 1):
                     self.enPassantable = end_col
                     return True
                 if(self.board[end_row][end_col] != '' and start_row-end_row == -1 and (start_col - 1 == end_col or start_col + 1 == end_col)):
+                    self.enPassantable = None
                     return True
                 if end_row == start_row + 1 and abs(end_col - start_col) == 1 and self.board[end_row][end_col] == '' and end_col == self.enPassantable:
+                    self.enPassantable = None
                     self.board[start_row][end_col] = ''
                     return True
             
             return False
             
         elif(piece[1] == "N"):
-
+            
             if(abs(start_row-end_row) == 1 and abs(start_col-end_col) == 2):
+                self.enPassantable = None
                 return True
             elif(abs(start_row-end_row) == 2 and abs(start_col-end_col) == 1):
+                self.enPassantable = None
                 return True
             
             return False
         elif(piece[1] == "K"):
+
             if(abs(start_row-end_row) == 1 and abs(start_col-end_col) == 1):
                 if(color == "w"):
                     self.white_king_pos = (end_row, end_col)
                 else:
                     self.black_king_pos = (end_row, end_col)
+                self.enPassantable = None
                 return True
             elif(abs(start_row-end_row) == 0 and abs(start_col-end_col) == 1):
                 if(color == "w"):
                     self.white_king_pos = (end_row, end_col)
                 else:
                     self.black_king_pos = (end_row, end_col)
+                self.enPassantable = None
                 return True
             elif(abs(start_row-end_row) == 1 and abs(start_col-end_col) == 0):
                 if(color == "w"):
                     self.white_king_pos = (end_row, end_col)
                 else:
                     self.black_king_pos = (end_row, end_col)
+                self.enPassantable = None
                 return True
             else:
                 return False
@@ -100,7 +112,7 @@ class Board:
             else:
                 return False
                 
-            
+            self.enPassantable = None
             return True
         elif(piece[1] == "B"):
             diffrow = end_row - start_row
@@ -123,6 +135,7 @@ class Board:
                 for i in range(0, abs(diffcol)):
                     if(self.board[start_row - i][start_col + i] != '' and i != 0 and i != abs(diffcol)):
                         return False
+            self.enPassantable = None
             return True
         elif(piece[1] == "Q"):
             diffrow = end_row - start_row
@@ -166,6 +179,8 @@ class Board:
                 for i in range(0, abs(diffcol)):
                     if(self.board[start_row - i][start_col + i] != '' and i != 0 and i != abs(diffcol)):
                         return False
+
+            self.enPassantable = None
             return True
             
                 
@@ -173,7 +188,7 @@ class Board:
 
                 
         else:
-            return True
+            return False
                 
 
         
