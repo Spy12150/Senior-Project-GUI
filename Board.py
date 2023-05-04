@@ -16,6 +16,7 @@ class Board:
         self.whiteKcastle = True
         self.blackQcastle = True
         self.blackKcastle = True
+        self.enPassantable = None
         self.white_king_pos = (7, 4)
         self.black_king_pos = (0, 4)
 
@@ -25,16 +26,24 @@ class Board:
             if(color == "w"):
                 if(self.board[end_row][end_col] == '' and start_row-end_row == 1 and start_col == end_col):
                     return True
-                if(self.board[end_row][end_col] == '' and start_row-end_row == 2 and start_col == end_col and start_row == 6):
+                if(self.board[end_row][end_col] == '' and self.board[end_row+1][end_col] == '' and start_row-end_row == 2 and start_col == end_col and start_row == 6):
+                    self.enPassantable = end_col
                     return True
                 if(self.board[end_row][end_col] != '' and start_row-end_row == 1 and (start_col - 1 == end_col or start_col + 1 == end_col)):
+                    return True
+                if end_row == start_row - 1 and abs(end_col - start_col) == 1 and self.board[end_row][end_col] == '' and end_col == self.enPassantable:
+                    self.board[start_row][end_col] = ''
                     return True
             elif(color == "b"):
                 if(self.board[end_row][end_col] == '' and start_row-end_row == -1 and start_col == end_col):
                     return True
-                if(self.board[end_row][end_col] == '' and start_row-end_row == -2 and start_col == end_col and start_row == 1):
+                if(self.board[end_row][end_col] == '' and self.board[end_row-1][end_col] == '' and start_row-end_row == -2 and start_col == end_col and start_row == 1):
+                    self.enPassantable = end_col
                     return True
                 if(self.board[end_row][end_col] != '' and start_row-end_row == -1 and (start_col - 1 == end_col or start_col + 1 == end_col)):
+                    return True
+                if end_row == start_row + 1 and abs(end_col - start_col) == 1 and self.board[end_row][end_col] == '' and end_col == self.enPassantable:
+                    self.board[start_row][end_col] = ''
                     return True
             
             return False

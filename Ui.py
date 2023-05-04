@@ -13,21 +13,23 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
 BLUE = (0, 0, 255)
+HAZEL = (240, 217, 181)
+BROWN = (181, 136, 99)
 
 # Load chess piece images
 images = {}
-images["wK"] = pygame.transform.scale(pygame.image.load('data/imgs/wK.png'), (64, 64))
-images["wQ"] = pygame.transform.scale(pygame.image.load('data/imgs/wQ.png'), (64, 64))
-images["wR"] = pygame.transform.scale(pygame.image.load('data/imgs/wR.png'), (64, 64))
-images["wB"] = pygame.transform.scale(pygame.image.load('data/imgs/wB.png'), (64, 64))
-images["wN"] = pygame.transform.scale(pygame.image.load('data/imgs/wN.png'), (64, 64))
-images["wP"] = pygame.transform.scale(pygame.image.load('data/imgs/wP.png'), (64, 64))
-images["bK"] = pygame.transform.scale(pygame.image.load('data/imgs/bK.png'), (64, 64))
-images["bQ"] = pygame.transform.scale(pygame.image.load('data/imgs/bQ.png'), (64, 64))
-images["bR"] = pygame.transform.scale(pygame.image.load('data/imgs/bR.png'), (64, 64))
-images["bB"] = pygame.transform.scale(pygame.image.load('data/imgs/bB.png'), (64, 64))
-images["bN"] = pygame.transform.scale(pygame.image.load('data/imgs/bN.png'), (64, 64))
-images["bP"] = pygame.transform.scale(pygame.image.load('data/imgs/bP.png'), (64, 64))
+images["wK"] = pygame.transform.scale(pygame.image.load('data/imgs/wK.png'), (80, 80))
+images["wQ"] = pygame.transform.scale(pygame.image.load('data/imgs/wQ.png'), (80, 80))
+images["wR"] = pygame.transform.scale(pygame.image.load('data/imgs/wR.png'), (80, 80))
+images["wB"] = pygame.transform.scale(pygame.image.load('data/imgs/wB.png'), (80, 80))
+images["wN"] = pygame.transform.scale(pygame.image.load('data/imgs/wN.png'), (80, 80))
+images["wP"] = pygame.transform.scale(pygame.image.load('data/imgs/wP.png'), (80, 80))
+images["bK"] = pygame.transform.scale(pygame.image.load('data/imgs/bK.png'), (80, 80))
+images["bQ"] = pygame.transform.scale(pygame.image.load('data/imgs/bQ.png'), (80, 80))
+images["bR"] = pygame.transform.scale(pygame.image.load('data/imgs/bR.png'), (80, 80))
+images["bB"] = pygame.transform.scale(pygame.image.load('data/imgs/bB.png'), (80, 80))
+images["bN"] = pygame.transform.scale(pygame.image.load('data/imgs/bN.png'), (80, 80))
+images["bP"] = pygame.transform.scale(pygame.image.load('data/imgs/bP.png'), (80, 80))
 
 # Define the chess board
 board = Board()
@@ -39,19 +41,27 @@ FONT = pygame.font.SysFont('calibri', 30)
 def draw_board():
     for row in range(8):
         for col in range(8):
-            color = WHITE if (row + col) % 2 == 0 else GRAY
+            color = HAZEL if (row + col) % 2 == 0 else BROWN
             pygame.draw.rect(win, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
             piece = board.board[row][col]
             if piece != '':
-                win.blit(images[piece], (col*SQUARE_SIZE, row*SQUARE_SIZE))
+                if piece != '':
+                    img = images[piece]
+                    img_x = col*SQUARE_SIZE + (SQUARE_SIZE-img.get_width())//2
+                    img_y = row*SQUARE_SIZE + (SQUARE_SIZE-img.get_height())//2
+                    win.blit(img, (img_x, img_y))
+
 
 # Draw the coordinates on the board
 def draw_coordinates():
     for i in range(8):
-        text = FONT.render(str(9-(i+1)), True, BLACK)
-        win.blit(text, (5, i*SQUARE_SIZE+20))
-        text = FONT.render(chr(97+i), True, BLACK)
-        win.blit(text, (i*SQUARE_SIZE+20, HEIGHT-35))
+        text = FONT.render(str(8 - i), True, BLACK)
+        win.blit(text, (5, i * SQUARE_SIZE + 10))
+
+        text = FONT.render(chr(97 + i), True, BLACK)
+        win.blit(text, (i * SQUARE_SIZE + 75, HEIGHT - 30))
+
+
 
 # Main game loop
 running = True
