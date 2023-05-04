@@ -59,7 +59,7 @@ def draw_coordinates():
         win.blit(text, (5, i * SQUARE_SIZE + 10))
 
         text = FONT.render(chr(97 + i), True, BLACK)
-        win.blit(text, (i * SQUARE_SIZE + 75, HEIGHT - 30))
+        win.blit(text, (i * SQUARE_SIZE + 80, HEIGHT - 30))
 
 
 
