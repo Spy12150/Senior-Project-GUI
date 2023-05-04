@@ -78,11 +78,15 @@ while running:
          move = str(input("what move do you want to make: "))
          Moved = board.move(move, turn)
         
-
+    
     if(turn == "w"):
         turn = "b"
     else:
         turn = "w"
+
+    if (board.is_checkmate(turn)):
+        print("Game over by checkmate")
+        running = False
 
     print("turn: ")
     print(turn)
