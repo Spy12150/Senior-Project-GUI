@@ -34,8 +34,8 @@ class Board:
                     return True
                 if(self.board[end_row][end_col] != '' and start_row-end_row == -1 and (start_col - 1 == end_col or start_col + 1 == end_col)):
                     return True
-            else:
-                return False
+            
+            return False
             
         if(piece[1] == "N"):
 
@@ -43,8 +43,8 @@ class Board:
                 return True
             elif(abs(start_row-end_row) == 2 and abs(start_col-end_col) == 1):
                 return True
-            else:
-                return False
+            
+            return False
         if(piece[1] == "K"):
             if(abs(start_row-end_row) == 1 and abs(start_col-end_col) == 1):
                 return True
@@ -201,8 +201,10 @@ class Board:
             print("invalid move")
             return False
         
+        
 
         
         
         return True
+
     
