@@ -96,10 +96,13 @@ while running:
 
     if (board.is_checkmate(turn)):
         print("Game over by checkmate")
+        if(turn == "w"):
+            print("Black wins!")
+        else:
+            print("White wins!")
         running = False
 
-    print("turn: ")
-    print(turn)
+    
    
 
 pygame.quit()

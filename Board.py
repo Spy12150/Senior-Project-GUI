@@ -151,7 +151,7 @@ class Board:
                         if(self.board[start_row][start_col - i] != '' and i != 0 and i != (start_col - end_col)):
                             return False
             elif(start_col-end_col == 0):
-                print("up down")
+            
                 if(end_row - start_row >= 0):
                     for i in range(0, (end_row - start_row)):
                         if(self.board[start_row + i][start_col] != '' and i != 0 and i != (end_row - start_row)):
@@ -268,15 +268,15 @@ class Board:
                         return True
         return False
 
-    def get_squares_in_between(start_coord, end_coord):
+    def get_squares_in_between(self, start_coord, end_coord):
         
         # Convert the algebraic notation to (x, y) coordinates
         
 
-        start_x = start_coord[0]
-        start_y = start_coord[1]
-        end_x = end_coord[0]
-        end_y = end_coord[1]
+        start_x = int(start_coord[0])
+        start_y = int(start_coord[1])
+        end_x = int(end_coord[0])
+        end_y = int(end_coord[1])
 
         # Calculate the direction of the movement
         dx = end_x - start_x
@@ -307,34 +307,56 @@ class Board:
             print("not in check")
             return False
 
-        king_pos = self.white_king_pos if color == 'b' else self.black_king_pos
-        opponent_color = 'w' if color == 'w' else 'b'
-        checking_piece = ''
+        king_pos = self.white_king_pos if color == 'w' else self.black_king_pos
+        opponent_color = 'b' if color == 'w' else 'w'
         checkingpieces = 0
+
+        print(opponent_color)
         for row in range(8):
             for col in range(8):
                 piece = self.board[row][col]
                 if piece != '' and piece[0] == opponent_color:
-                    
                     if self.is_valid_move(row, col, king_pos[0], king_pos[1], opponent_color):
                         checking_piece = (str(row) + str(col))
                         print(checking_piece)
                         checkingpieces += 1
+
+
+        if(checkingpieces == 0):
+            print("no checking pieces")
+            return False
+        
         for row in range(8):
             for col in range(8):
                 piece = self.board[row][col]
-                if piece != '' and piece[0] == opponent_color:
-                    if self.is_valid_move(row, col, int(checking_piece[0]), int(checking_piece[1]), opponent_color):
-                        print(str(row) + str(col) + "can take")
-                       
-                        return False
+                if piece != '' and piece[0] == color:
+                    if self.is_valid_move(row, col, int(checking_piece[0]), int(checking_piece[1]), color):
+                        
+                        
+                        if(piece[1] != "K"):
+                            print("check can be taken by: ")
+                            print(piece + str(row) + str(col))
+                            return False
+                        else:
+                            self.board[row][col] = ''
+                            self.board[int(checking_piece[0])][int(checking_piece[0])] = piece
+                            if(self.is_king_in_check(color)):
+                                self.board[row][col] = piece
+                                self.board[int(checking_piece[0])][int(checking_piece[0])] = ''
+                            else:
+                                self.board[row][col] = piece
+                                self.board[int(checking_piece[0])][int(checking_piece[0])] = ''
+                                print("check can be taken by king")
+                                return False
+
         for row in range(8):
             for col in range(8):
-                inbetween = self.get_squares_in_between()
+                inbetween = self.get_squares_in_between(self.get_king_pos(color), checking_piece)
                 for squares in inbetween:
                     piece = self.board[row][col]
-                    if piece != '' and piece[0] == opponent_color:
-                        if self.is_valid_move(row, col, int(squares[0]), int(squares[1]), opponent_color):
+                    if piece != '' and piece[0] == color:
+                        if self.is_valid_move(row, col, int(squares[0]), int(squares[1]), color) and piece[1] != "K":
+                            print(squares)
                             print(str(row) + str(col) + "can block")
                          
                             return False
