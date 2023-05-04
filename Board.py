@@ -1,4 +1,3 @@
-from curses import start_color
 import pygame
 
 class Board:
@@ -39,8 +38,6 @@ class Board:
                 return False
             
         if(piece[1] == "N"):
-            print(abs(start_row-end_row))
-            print(abs(start_col-end_col))
 
             if(abs(start_row-end_row) == 1 and abs(start_col-end_col) == 2):
                 return True
@@ -62,26 +59,96 @@ class Board:
 
                 if(end_col - start_col >= 0):
                     for i in range(0, (end_col - start_col)):
-                        if(self.board[start_row][start_col + i] != '' and i != 0):
+                        if(self.board[start_row][start_col + i] != '' and i != 0 and i != (end_col - start_col)):
                             return False
                 else:
                     for i in range(0, (start_col - end_col)):
-                        if(self.board[start_row][start_col - i] != '' and i != 0):
+                        if(self.board[start_row][start_col - i] != '' and i != 0 and i != (start_col - end_col)):
                             return False
             elif(start_col-end_col == 0):
                 print("up down")
                 if(end_row - start_row >= 0):
                     for i in range(0, (end_row - start_row)):
-                        if(self.board[start_row + i][start_col] != '' and i != 0):
+                        if(self.board[start_row + i][start_col] != '' and i != 0 and i != (end_row - start_row)):
                             return False
                 else:
                     for i in range(0, (start_row - end_row)):
-                        if(self.board[start_row - i][start_col] != '' and i != 0):
+                        if(self.board[start_row - i][start_col] != '' and i != 0 and i != (start_row - end_row)):
                             return False
             else:
                 return False
+                
             
             return True
+        if(piece[1] == "B"):
+            diffrow = end_row - start_row
+            diffcol = end_col - start_col
+            if(abs(diffrow) != abs(diffcol)):
+                print("this move was not diagonal")
+                return False
+            elif(diffrow >= 0 and diffcol >=0):
+                for i in range(0, (diffcol)):
+                    if(self.board[start_row + i][start_col + i] != '' and i != 0 and i != abs(diffcol)):
+                        return False
+            elif(diffrow <= 0 and diffcol <=0):
+                for i in range(0, abs(diffcol)):
+                    if(self.board[start_row - i][start_col - i] != '' and i != 0 and i != abs(diffcol)):
+                        return False
+            elif(diffrow >= 0 and diffcol <=0):
+                for i in range(0, abs(diffcol)):
+                    if(self.board[start_row + i][start_col - i] != '' and i != 0 and i != abs(diffcol)):
+                        return False
+            elif(diffrow <= 0 and diffcol >=0):
+                for i in range(0, abs(diffcol)):
+                    if(self.board[start_row - i][start_col + i] != '' and i != 0 and i != abs(diffcol)):
+                        return False
+            return True
+        if(piece[1] == "Q"):
+            diffrow = end_row - start_row
+            diffcol = end_col - start_col
+            if(start_row-end_row == 0):
+
+                if(end_col - start_col >= 0):
+                    for i in range(0, (end_col - start_col)):
+                        if(self.board[start_row][start_col + i] != '' and i != 0 and i != (end_col - start_col)):
+                            return False
+                else:
+                    for i in range(0, (start_col - end_col)):
+                        if(self.board[start_row][start_col - i] != '' and i != 0 and i != (start_col - end_col)):
+                            return False
+            elif(start_col-end_col == 0):
+                print("up down")
+                if(end_row - start_row >= 0):
+                    for i in range(0, (end_row - start_row)):
+                        if(self.board[start_row + i][start_col] != '' and i != 0 and i != (end_row - start_row)):
+                            return False
+                else:
+                    for i in range(0, (start_row - end_row)):
+                        if(self.board[start_row - i][start_col] != '' and i != 0 and i != (start_row - end_row)):
+                            return False
+            
+            elif(abs(diffrow) != abs(diffcol)):
+                return False
+            elif(diffrow >= 0 and diffcol >=0):
+                for i in range(0, (diffcol)):
+                    if(self.board[start_row + i][start_col + i] != '' and i != 0 and i != abs(diffcol)):
+                        return False
+            elif(diffrow <= 0 and diffcol <=0):
+                for i in range(0, abs(diffcol)):
+                    if(self.board[start_row - i][start_col - i] != '' and i != 0 and i != abs(diffcol)):
+                        return False
+            elif(diffrow >= 0 and diffcol <=0):
+                for i in range(0, abs(diffcol)):
+                    if(self.board[start_row + i][start_col - i] != '' and i != 0 and i != abs(diffcol)):
+                        return False
+            elif(diffrow <= 0 and diffcol >=0):
+                for i in range(0, abs(diffcol)):
+                    if(self.board[start_row - i][start_col + i] != '' and i != 0 and i != abs(diffcol)):
+                        return False
+            return True
+            
+                
+            
 
                 
         else:
