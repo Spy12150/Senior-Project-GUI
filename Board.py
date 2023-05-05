@@ -1,4 +1,5 @@
 import pygame
+import time
 
 class Board:
     def __init__(self):
@@ -12,11 +13,8 @@ class Board:
         ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
         ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
         ]
-        self.whiteQcastle = True
-        self.whiteKcastle = True
-        self.blackQcastle = True
-        self.blackKcastle = True
         self.enPassantable = None
+        self.castle = "KQKQ"
         self.white_king_pos = (7, 4)
         self.black_king_pos = (0, 4)
 
@@ -66,12 +64,18 @@ class Board:
             return False
         elif(piece[1] == "K"):
 
+            
+
             if(abs(start_row-end_row) == 1 and abs(start_col-end_col) == 1):
                 if(color == "w"):
                     self.white_king_pos = (end_row, end_col)
                 else:
                     self.black_king_pos = (end_row, end_col)
                 self.enPassantable = None
+                if(color == "w"):
+                    self.castle = "xx" + self.castle[2] + self.castle[3]
+                else:
+                    self.castle = self.castle[0] + self.castle[1] + "xx"
                 return True
             elif(abs(start_row-end_row) == 0 and abs(start_col-end_col) == 1):
                 if(color == "w"):
@@ -79,6 +83,10 @@ class Board:
                 else:
                     self.black_king_pos = (end_row, end_col)
                 self.enPassantable = None
+                if(color == "w"):
+                    self.castle = "xx" + self.castle[2] + self.castle[3]
+                else:
+                    self.castle = self.castle[0] + self.castle[1] + "xx"
                 return True
             elif(abs(start_row-end_row) == 1 and abs(start_col-end_col) == 0):
                 if(color == "w"):
@@ -86,7 +94,89 @@ class Board:
                 else:
                     self.black_king_pos = (end_row, end_col)
                 self.enPassantable = None
+                if(color == "w"):
+                    self.castle = "xx" + self.castle[2] + self.castle[3]
+                else:
+                    self.castle = self.castle[0] + self.castle[1] + "xx"
                 return True
+            elif(start_col - end_col == 2 and start_row == end_row and start_row == 7 and self.castle[1] == "Q" and color == "w"):
+                print("attempted castle Q")
+                for i in [0, 1, 2]:
+                    opponent_color = 'b' if color == 'w' else 'w'
+                    if(self.board[start_row][start_col - i]!= '' and i!= 0):
+                        return False
+                    for row in range(8):
+                        for col in range(8):
+                            piece = self.board[row][col]
+                            if piece != '' and piece[0] == opponent_color:
+                                if self.is_valid_move(row, col, start_row, start_col - i, opponent_color):
+                                    return False
+                if(color == "w"):
+                    self.castle = "xx" + self.castle[2] + self.castle[3]
+                else:
+                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                self.board[7][0] = ''
+                self.board[7][3] = "wR"
+                return True
+            elif(end_col - start_col == 2 and start_row == end_row and start_row == 7 and self.castle[0] == "K" and color == "w"):
+                print("attempted castle")
+                for i in [0, 1, 2]:
+                    if(self.board[start_row][start_col + i] != '' and i!= 0):
+                        print("square occupied")
+                        print(str(start_row) + str(start_col + i))
+                        return False
+                    opponent_color = 'b' if color == 'w' else 'w'
+                    for row in range(8):
+                        for col in range(8):
+                            piece = self.board[row][col]
+                            if piece != '' and piece[0] == opponent_color:
+                                if self.is_valid_move(row, col, start_row, start_col + i, opponent_color):
+                                    print("square attacked")
+                                    return False
+                if(color == "w"):
+                    self.castle = "xx" + self.castle[2] + self.castle[3]
+                else:
+                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                self.board[7][7] = ''
+                self.board[7][5] = "wR"
+                return True
+            elif(start_col - end_col == 2 and start_row == end_row and start_row == 0 and self.castle[3] == "Q" and color == "b"):
+                for i in [0, 1, 2]:
+                    opponent_color = 'b' if color == 'w' else 'w'
+                    if(self.board[start_row][start_col - i] != '' and i!= 0):
+                        return False
+                    for row in range(8):
+                        for col in range(8):
+                            piece = self.board[row][col]
+                            if piece != '' and piece[0] == opponent_color:
+                                if self.is_valid_move(row, col, start_row, start_col - i, opponent_color):
+                                    return False
+                if(color == "w"):
+                    self.castle = "xx" + self.castle[2] + self.castle[3]
+                else:
+                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                self.board[0][0] = ''
+                self.board[0][3] = "wR"
+                return True
+            elif(end_col - start_col == 2 and start_row == end_row and start_row == 0 and self.castle[2] == "K" and color == "b"):
+                for i in [0, 1, 2]:
+                    if(self.board[start_row][start_col + i] != '' and i!= 0):
+                        return False
+                    opponent_color = 'b' if color == 'w' else 'w'
+                    for row in range(8):
+                        for col in range(8):
+                            piece = self.board[row][col]
+                            if piece != '' and piece[0] == opponent_color:
+                                if self.is_valid_move(row, col, start_row, start_col + i, opponent_color):
+                                    return False
+                if(color == "w"):
+                    self.castle = "xx" + self.castle[2] + self.castle[3]
+                else:
+                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                self.board[0][7] = ''
+                self.board[0][5] = "wR"
+                return True
+
             else:
                 return False
         elif(piece[1] == "R"):
@@ -113,6 +203,16 @@ class Board:
                 return False
                 
             self.enPassantable = None
+            if(start_col == 0 and color == "w" and start_row == 7):
+                self.castle == self.castle[0] + "x" + self.castle[2] + self.castle[3]
+            if(start_col == 7 and color == "w" and start_row == 7):
+                self.castle == "x" + self.castle[1] +  self.castle[2] + self.castle[3]
+            if(start_col == 0 and color == "w" and start_row == 0):
+                self.castle == self.castle[0]  + self.castle[1] + self.castle[2] + "x"
+            if(start_col == 7 and color == "w" and start_row == 0):
+                self.castle == self.castle[0] +  self.castle[1] + "x"  + self.castle[3]
+
+
             return True
         elif(piece[1] == "B"):
             diffrow = end_row - start_row
@@ -136,6 +236,7 @@ class Board:
                     if(self.board[start_row - i][start_col + i] != '' and i != 0 and i != abs(diffcol)):
                         return False
             self.enPassantable = None
+            print(" bishop moved")
             return True
         elif(piece[1] == "Q"):
             diffrow = end_row - start_row
@@ -224,7 +325,6 @@ class Board:
                 return False
 
 
-        print(self.board[start_row][start_col])
         if (self.board[start_row][start_col][0] != color):
             print("wrong color")
             return False
@@ -303,8 +403,9 @@ class Board:
         return squares_in_between
 
     def is_checkmate(self,color):
+        replacableboard = self.board
         if(not self.is_king_in_check(color)):
-            print("not in check")
+            
             return False
 
         king_pos = self.white_king_pos if color == 'w' else self.black_king_pos
@@ -318,13 +419,30 @@ class Board:
                 if piece != '' and piece[0] == opponent_color:
                     if self.is_valid_move(row, col, king_pos[0], king_pos[1], opponent_color):
                         checking_piece = (str(row) + str(col))
-                        print(checking_piece)
                         checkingpieces += 1
 
+        print(king_pos)
+        for i in [-1,0,1]:
+            for j in [-1,0,1]:
+                if (self.is_valid_move(int(king_pos[0]), int(king_pos [1]), int(king_pos[0]) + i, int(king_pos [1]) + j, color) and 8>int(king_pos[0]) + i > -1 and 8>int(king_pos [1]) + j > -1 ):
+                    if (self.board[king_pos[0] + i][king_pos[1] + j] == ''):
+                        quicksave = self.board[king_pos[0] + i][king_pos[1] + j]
+                        self.board[king_pos[0]][king_pos[1]] = ''
+                        self.board[king_pos[0] + i][king_pos[1] + j] = color + "K"
+                        if(self.is_king_in_check(color)):
+                            self.board[king_pos[0]][king_pos[1]] =  color + "K"
+                            self.board[king_pos[0] + i][king_pos[1] + j] = quicksave
+                        else:
+                            self.board[king_pos[0]][king_pos[1]] =  color + "K"
+                            self.board[king_pos[0] + i][king_pos[1] + j] = quicksave
+                            print(str(king_pos[0] + i) + str(king_pos[1] + j))
+                            print("king can escape")
+                            self.board = replacableboard
+                            return False
 
-        if(checkingpieces == 0):
-            print("no checking pieces")
-            return False
+        print("gets past king")
+
+
         
         for row in range(8):
             for col in range(8):
@@ -343,12 +461,15 @@ class Board:
                             if(self.is_king_in_check(color)):
                                 self.board[row][col] = piece
                                 self.board[int(checking_piece[0])][int(checking_piece[0])] = ''
+                                print("king can move")
                             else:
                                 self.board[row][col] = piece
                                 self.board[int(checking_piece[0])][int(checking_piece[0])] = ''
                                 print("check can be taken by king")
                                 return False
 
+        
+        print("check for blocking")
         for row in range(8):
             for col in range(8):
                 inbetween = self.get_squares_in_between(self.get_king_pos(color), checking_piece)
@@ -356,7 +477,6 @@ class Board:
                     piece = self.board[row][col]
                     if piece != '' and piece[0] == color:
                         if self.is_valid_move(row, col, int(squares[0]), int(squares[1]), color) and piece[1] != "K":
-                            print(squares)
                             print(str(row) + str(col) + "can block")
                          
                             return False

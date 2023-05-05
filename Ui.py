@@ -1,6 +1,7 @@
-from ast import Import
+
 import pygame
 from Board import Board
+import time
 
 # Set up the Pygame window
 pygame.init()
@@ -37,6 +38,10 @@ board = Board()
 SQUARE_SIZE = HEIGHT // 8
 FONT = pygame.font.SysFont('calibri', 30)
 
+moves=["e2e4","d7d5","d1g4","f7f6", "a2a3", "h7h6", "g4g6"]
+
+#  "c8g4", "g1f3", "b8c6", "d2d3", "e7e6", "c1g5", "f8b4", "b1c3", "g8f6"]
+
 # Draw the chess board
 def draw_board():
     for row in range(8):
@@ -68,11 +73,13 @@ running = True
 
 print("enter moves in the notation: e2e4 (start pos + end pos_")
 turn = "w"
+movenum = 0
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    
 
      # Draw the board and pieces
     draw_board()
@@ -85,22 +92,27 @@ while running:
     
     Moved = False
     while(not Moved):
-         move = str(input("what move do you want to make: "))
-         Moved = board.move(move, turn)
-        
-    
-    if(turn == "w"):
-        turn = "b"
-    else:
-        turn = "w"
-
-    if (board.is_checkmate(turn)):
-        print("Game over by checkmate")
-        if(turn == "w"):
-            print("Black wins!")
+        if movenum < len(moves):
+            move = moves[movenum]
+            movenum += 1
         else:
-            print("White wins!")
-        running = False
+             move = str(input("what move do you want to make: "))
+        Moved = board.move(move, turn)
+    
+        
+        if(turn == "w"):
+            turn = "b"
+        else:
+            turn = "w"
+        replacableboard = board.board
+        if (board.is_checkmate(turn)):
+            print("Game over by checkmate")
+            if(turn == "w"):
+                print("Black wins!")
+            else:
+                print("White wins!")
+            running = False
+        board.board = replacableboard
 
     
    
