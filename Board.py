@@ -25,9 +25,10 @@ class Board:
                 if(self.board[end_row][end_col] == '' and start_row-end_row == 1 and start_col == end_col):
                     self.enPassantable = None
                     return True
-                if(self.board[end_row][end_col] == '' and self.board[end_row+1][end_col] == '' and start_row-end_row == 2 and start_col == end_col and start_row == 6):
-                    self.enPassantable = end_col
-                    return True
+                if(start_row == 7):
+                    if(self.board[end_row][end_col] == '' and self.board[end_row+1][end_col] == '' and start_row-end_row == 2 and start_col == end_col and start_row == 6):
+                        self.enPassantable = end_col
+                        return True
                 if(self.board[end_row][end_col] != '' and start_row-end_row == 1 and (start_col - 1 == end_col or start_col + 1 == end_col)):
                     self.enPassantable = None
                     return True
@@ -39,9 +40,10 @@ class Board:
                 if(self.board[end_row][end_col] == '' and start_row-end_row == -1 and start_col == end_col):
                     self.enPassantable = None
                     return True
-                if(self.board[end_row][end_col] == '' and self.board[end_row-1][end_col] == '' and start_row-end_row == -2 and start_col == end_col and start_row == 1):
-                    self.enPassantable = end_col
-                    return True
+                if(start_row == 1):
+                    if(self.board[end_row][end_col] == '' and self.board[end_row-1][end_col] == '' and start_row-end_row == -2 and start_col == end_col and start_row == 1):
+                        self.enPassantable = end_col
+                        return True
                 if(self.board[end_row][end_col] != '' and start_row-end_row == -1 and (start_col - 1 == end_col or start_col + 1 == end_col)):
                     self.enPassantable = None
                     return True
@@ -236,7 +238,6 @@ class Board:
                     if(self.board[start_row - i][start_col + i] != '' and i != 0 and i != abs(diffcol)):
                         return False
             self.enPassantable = None
-            print(" bishop moved")
             return True
         elif(piece[1] == "Q"):
             diffrow = end_row - start_row
@@ -290,16 +291,10 @@ class Board:
                 
         else:
             return False
-                
 
-        
-        
-
-
-
-    
-    def move(self, move, color):
+    def moveTest(self, move, color):
         if(len(move) != 4):
+            
             return False
         
         start_col = ord(move[0]) - ord('a')
@@ -307,47 +302,259 @@ class Board:
         end_col = ord(move[2]) - ord('a')
         end_row = 7- (int(move[3]) - 1)
 
+        
 
+        if(len(str(start_col) + str(start_row) + str(end_col) + str(end_row)) != 4):
+            
+            return False
 
         if str(start_col) not in '01234567' or str(end_col) not in '01234567' or str(start_row) not in '01234567' or str(end_row) not in '01234567':
-
-            print("Invalid move. Please enter a move in the format 'e2e4'.")
+            
             return False
 
         piece = self.board[start_row][start_col]
 
         if piece == '':
-            print("choose a piece")
+            
             return False
         if(self.board[end_row][end_col] != ''):
             if(self.board[end_row][end_col][0] == color):
-                print("U cant take ur own pieces")
+                
+                
                 return False
 
 
         if (self.board[start_row][start_col][0] != color):
-            print("wrong color")
+            
             return False
 
         if (self.is_valid_move(start_row, start_col, end_row, end_col, color)):
+            swapped = self.board[end_row][end_col]
             self.board[start_row][start_col] = ''
             self.board[end_row][end_col] = piece
             if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
                 self.board[end_row][end_col] = piece[0] + "Q"
             if(self.is_king_in_check(color)):
                 self.board[start_row][start_col] = piece
-                self.board[end_row][end_col] = ''
-                print("Cannot move here, king is in check")
+                self.board[end_row][end_col] = swapped
+            
+                
                 return False
+            self.board[start_row][start_col] = piece
+            self.board[end_row][end_col] = swapped
 
         else: 
-            print("invalid move")
+            
+  
             return False
         
         
 
         
         
+        return True
+                
+
+    def get_legal_moves(self, color):
+        moves = []
+        boardcopy = self  # create a copy of the board to avoid modifying the original
+        for row in range(8):
+            for col in range(8):
+                piece = boardcopy.board[row][col]
+                if piece != '' and piece[0] == color:
+                    if piece[1] == "P" and color == "w":
+                        movesopt = {(-1,-1), (-1,1), (-1,0), (-2,0)}
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                
+                                
+                                if boardcopy.moveTest(move, color):
+                                    moves.append(move)
+                                    boardcopy = self
+                    elif piece[1] == "P" and color == "b":
+                        movesopt = {(1,-1), (1,1), (1,0), (2,0)}
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                if boardcopy.moveTest(move, color):
+                                    moves.append(move)
+                                    boardcopy = self
+                    elif piece[1] == "R" and piece[0] == color:
+                        movesopt = []
+                        for i in range(17):
+                            movesopt.append((0,i - 8))
+                        for i in range(17):
+                            movesopt.append((i - 8,0))
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                if boardcopy.moveTest(move, color):
+                                    moves.append(move)
+                                    boardcopy = self
+                    elif piece[1] == "N" and piece[0] == color:
+                        movesopt = {(-2,-1), (-1,-2),(-2,1),(1,-2),(2,-1),(-1,2),(2,1),(2,1)}
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                
+                                
+                                if boardcopy.moveTest(move, color):
+                                    moves.append(move)
+                                    
+                                    boardcopy = self
+                    elif piece[1] == "K" and piece[0] == color:
+                        movesopt = []
+                        for i in [-1,0,1]:
+                            for j in [-1, 0, 1]:
+                                movesopt.append((i,j))
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                
+                                if boardcopy.moveTest(move, color):
+                                    moves.append(move)
+                                    boardcopy = self
+                    elif piece[1] == "B" and piece[0] == color:
+                        movesopt = []
+                        for i in range(17):
+                            movesopt.append((i-8,i - 8))
+                        for i in range(17):
+                            movesopt.append((i - 8,-i + 8))
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                            
+                            if boardcopy.moveTest(move, color):
+                                    moves.append(move)
+                                    boardcopy = self
+                    elif piece[1] == "Q" and piece[0] == color:
+                        movesopt = []
+                        for i in range(17):
+                            movesopt.append((0,i - 8))
+                        for i in range(17):
+                            movesopt.append((i - 8,0))
+                        for i in range(17):
+                            movesopt.append((i-8,i - 8))
+                        for i in range(17):
+                            movesopt.append((i - 8,-i + 8))
+                        for movenums in movesopt:
+                            move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + col + movenums[1]) + str(8 - row + movenums[0])
+                            
+                            if boardcopy.moveTest(move, color):
+                                    moves.append(move)
+                                    boardcopy = self
+                    boardcopy.board = self.board
+
+        return moves
+        
+
+
+
+    
+    def move(self, move, color, legalmoves):
+        
+        if(move in legalmoves):
+            start_col = ord(move[0]) - ord('a')
+            start_row = 7 - (int(move[1]) - 1)
+            end_col = ord(move[2]) - ord('a')
+            end_row = 7- (int(move[3]) - 1)
+            piece = self.board[start_row][start_col]
+            if(start_row == 7 and start_col == 0):
+                self.castle = self.castle[:1] + "x" + self.castle[2:]
+            if(start_row == 7 and start_col == 7):
+                self.castle = "x" + self.castle[1:]
+            if(start_row == 0 and start_col == 0):
+                self.castle = self.castle[:3] + "x"
+            if(start_row == 0 and start_col == 7):
+                self.castle = self.castle[:2] + "x" + self.castle[3:]
+            self.board[start_row][start_col] = ''
+            self.board[end_row][end_col] = piece
+            if(piece=="wK"):
+                self.castle = "xx" + self.castle[2:]
+                print("castling changed")
+            if(piece == "bK"):
+                self.castle = self.castle[:1] + "xx"
+
+            if(piece=="wK" and move == "e1g1"):
+                self.board[7][7] = ''
+                self.board[7][5] = "wR"
+            if(piece=="wK" and move == "e1c1"):
+                self.board[7][0] = ''
+                self.board[7][3] = "wR"
+            
+            if(piece=="bK" and move == "e8g8"):
+                self.board[0][7] = ''
+                self.board[0][5] = "wR"
+            if(piece=="wK" and move == "e8c8"):
+                self.board[0][0] = ''
+                self.board[0][3] = "wR"
+            return True
+        
+        
+
+
+        if(len(move) != 4):
+            
+            return False
+        
+        start_col = ord(move[0]) - ord('a')
+        start_row = 7 - (int(move[1]) - 1)
+        end_col = ord(move[2]) - ord('a')
+        end_row = 7- (int(move[3]) - 1)
+
+        
+
+        if(len(str(start_col) + str(start_row) + str(end_col) + str(end_row)) != 4):
+            
+            return False
+
+        if str(start_col) not in '01234567' or str(end_col) not in '01234567' or str(start_row) not in '01234567' or str(end_row) not in '01234567':
+            
+            return False
+
+        piece = self.board[start_row][start_col]
+
+        if piece == '':
+            
+            return False
+        if(self.board[end_row][end_col] != ''):
+            if(self.board[end_row][end_col][0] == color):
+                
+                
+                return False
+
+
+        if (self.board[start_row][start_col][0] != color):
+            
+            return False
+
+        if (self.is_valid_move(start_row, start_col, end_row, end_col, color)):
+            swapped = self.board[end_row][end_col]
+            self.board[start_row][start_col] = ''
+            self.board[end_row][end_col] = piece
+            if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
+                self.board[end_row][end_col] = piece[0] + "Q"
+            if(self.is_king_in_check(color)):
+                self.board[start_row][start_col] = piece
+                self.board[end_row][end_col] = swapped
+                
+                return False
+
+        else: 
+            
+  
+            return False
+        
+        
+
+        
+        print(move)
         return True
 
 
@@ -364,7 +571,11 @@ class Board:
             for col in range(8):
                 piece = self.board[row][col]
                 if piece != '' and piece[0] == opponent_color:
+                    
                     if self.is_valid_move(row, col, king_pos[0], king_pos[1], opponent_color):
+                        print(str(row) + ", " + str(col))
+                        print(str(king_pos[0]) + ", " + str(king_pos[1]))
+                        print(piece)
                         return True
         return False
 
@@ -405,83 +616,57 @@ class Board:
     def is_checkmate(self,color):
         replacableboard = self.board
         if(not self.is_king_in_check(color)):
-            
+            print("no check")
             return False
 
-        king_pos = self.white_king_pos if color == 'w' else self.black_king_pos
-        opponent_color = 'b' if color == 'w' else 'w'
-        checkingpieces = 0
+        print("king is in")
 
-        print(opponent_color)
-        for row in range(8):
-            for col in range(8):
-                piece = self.board[row][col]
-                if piece != '' and piece[0] == opponent_color:
-                    if self.is_valid_move(row, col, king_pos[0], king_pos[1], opponent_color):
-                        checking_piece = (str(row) + str(col))
-                        checkingpieces += 1
+        moves = self.get_legal_moves(color)
 
-        print(king_pos)
-        for i in [-1,0,1]:
-            for j in [-1,0,1]:
-                if (self.is_valid_move(int(king_pos[0]), int(king_pos [1]), int(king_pos[0]) + i, int(king_pos [1]) + j, color) and 8>int(king_pos[0]) + i > -1 and 8>int(king_pos [1]) + j > -1 ):
-                    if (self.board[king_pos[0] + i][king_pos[1] + j] == ''):
-                        quicksave = self.board[king_pos[0] + i][king_pos[1] + j]
-                        self.board[king_pos[0]][king_pos[1]] = ''
-                        self.board[king_pos[0] + i][king_pos[1] + j] = color + "K"
-                        if(self.is_king_in_check(color)):
-                            self.board[king_pos[0]][king_pos[1]] =  color + "K"
-                            self.board[king_pos[0] + i][king_pos[1] + j] = quicksave
-                        else:
-                            self.board[king_pos[0]][king_pos[1]] =  color + "K"
-                            self.board[king_pos[0] + i][king_pos[1] + j] = quicksave
-                            print(str(king_pos[0] + i) + str(king_pos[1] + j))
-                            print("king can escape")
-                            self.board = replacableboard
-                            return False
-
-        print("gets past king")
-
-
-        
-        for row in range(8):
-            for col in range(8):
-                piece = self.board[row][col]
-                if piece != '' and piece[0] == color:
-                    if self.is_valid_move(row, col, int(checking_piece[0]), int(checking_piece[1]), color):
-                        
-                        
-                        if(piece[1] != "K"):
-                            print("check can be taken by: ")
-                            print(piece + str(row) + str(col))
-                            return False
-                        else:
-                            self.board[row][col] = ''
-                            self.board[int(checking_piece[0])][int(checking_piece[0])] = piece
-                            if(self.is_king_in_check(color)):
-                                self.board[row][col] = piece
-                                self.board[int(checking_piece[0])][int(checking_piece[0])] = ''
-                                print("king can move")
-                            else:
-                                self.board[row][col] = piece
-                                self.board[int(checking_piece[0])][int(checking_piece[0])] = ''
-                                print("check can be taken by king")
-                                return False
-
-        
-        print("check for blocking")
-        for row in range(8):
-            for col in range(8):
-                inbetween = self.get_squares_in_between(self.get_king_pos(color), checking_piece)
-                for squares in inbetween:
-                    piece = self.board[row][col]
-                    if piece != '' and piece[0] == color:
-                        if self.is_valid_move(row, col, int(squares[0]), int(squares[1]), color) and piece[1] != "K":
-                            print(str(row) + str(col) + "can block")
-                         
-                            return False
-
+        for move in moves:
+            start_col = ord(move[0]) - ord('a')
+            start_row = 7 - (int(move[1]) - 1)
+            end_col = ord(move[2]) - ord('a')
+            end_row = 7- (int(move[3]) - 1)
+            piece = self.board[start_row][start_col]
+            swapped = self.board[end_row][end_col]
+            self.board[start_row][start_col] = ''
+            self.board[end_row][end_col] = piece
+            if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
+                self.board[end_row][end_col] = piece[0] + "Q"
+            if(self.is_king_in_check(color)):
+                self.board[start_row][start_col] = piece
+                self.board[end_row][end_col] = swapped
+                
+                return False   
+        if(len(moves) != 0):
+            return False
         return True
+    def is_stalemate(self, color, moves):
+        if(self.is_king_in_check(color)):
+            return False
+
+        
+        if (len(moves) == 0):
+            return True
+
+        pieces = []
+        for row in range(8):
+            for col in range(8):
+                piece = self.board[row][col]
+                if piece != '' and piece[1] != "K":
+                    pieces.append("piece")
+                    if(len(pieces) > 2):
+                        return False
+        if(len(pieces) == 0):
+            return True
+        if(len(pieces) == 1 and (pieces[0][1] == "N" or pieces[0][1] == "B")):
+            return True
+        if(len(pieces) == 1 and (pieces[0][1] == "N" and pieces[1][1] == "N")):
+            return True
+
+        return False
+    
             
             
         

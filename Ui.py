@@ -1,7 +1,11 @@
 
+from turtle import color
 import pygame
 from Board import Board
+from TreeEngine import TreeEngine
 import time
+from MovesList import MovesList
+import random
 
 # Set up the Pygame window
 pygame.init()
@@ -38,7 +42,8 @@ board = Board()
 SQUARE_SIZE = HEIGHT // 8
 FONT = pygame.font.SysFont('calibri', 30)
 
-moves=["e2e4","d7d5","d1g4","f7f6", "a2a3", "h7h6", "g4g6"]
+scriptedmoves=[]
+list = MovesList()
 
 #  "c8g4", "g1f3", "b8c6", "d2d3", "e7e6", "c1g5", "f8b4", "b1c3", "g8f6"]
 
@@ -74,8 +79,10 @@ running = True
 print("enter moves in the notation: e2e4 (start pos + end pos_")
 turn = "w"
 movenum = 0
+randommove = TreeEngine(5)
 
 while running:
+    time.sleep(.02)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -87,32 +94,62 @@ while running:
 
     # Check if the game is over
     pygame.display.update()
+    
             
 
     
     Moved = False
     while(not Moved):
-        if movenum < len(moves):
-            move = moves[movenum]
+        moves = list.get_legal_moves(board, turn)
+        if movenum < len(scriptedmoves):
+            move = scriptedmoves[movenum]
             movenum += 1
+            Moved = board.move(move, turn, moves)
         else:
-             move = str(input("what move do you want to make: "))
-        Moved = board.move(move, turn)
-    
-        
-        if(turn == "w"):
-            turn = "b"
-        else:
-            turn = "w"
-        replacableboard = board.board
-        if (board.is_checkmate(turn)):
-            print("Game over by checkmate")
-            if(turn == "w"):
-                print("Black wins!")
+
+            
+            if(list.is_king_in_check(board, turn)):
+                
+                print(turn + "king in check")
+                
+            
+            
+            if(moves == [] and list.is_king_in_check(board, turn)):
+                if turn == "b":
+                    print("game is over by checkmate")
+                    print("w" + " Wins!")
+                else:
+                    print("game is over by checkmate")
+                    print("w" + " Wins!")
+                running = False
+                time.sleep(30)
+            elif(moves == []):
+                print("The game is a draw")
+                running = False
+                time.sleep(30)
+            elif(list.is_stalemate(turn, moves, board)):
+                print("The game is a draw")
+                running = False
+                time.sleep(30)
+
+            if(turn == "b"):
+
+                Moved = board.move(moves[random.randint(0, len(moves) - 1)], turn, moves)
             else:
-                print("White wins!")
-            running = False
-        board.board = replacableboard
+                print("your legal moves are: ")
+                print(moves)
+                Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
+            
+             
+        
+        
+    movenum += 1
+    if(turn == "w"):
+        turn = "b"
+    else:
+        turn = "w"
+    
+    
 
     
    
