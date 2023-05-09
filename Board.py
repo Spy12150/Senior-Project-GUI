@@ -14,7 +14,10 @@ class Board:
         ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
         ]
         self.enPassantable = None
-        self.castle = "KQKQ"
+        self.bqCastle = True
+        self.bkCastle = True
+        self.wqCastle = True
+        self.wkCastle = True
         self.white_king_pos = (7, 4)
         self.black_king_pos = (0, 4)
 
@@ -74,10 +77,7 @@ class Board:
                 else:
                     self.black_king_pos = (end_row, end_col)
                 self.enPassantable = None
-                if(color == "w"):
-                    self.castle = "xx" + self.castle[2] + self.castle[3]
-                else:
-                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                
                 return True
             elif(abs(start_row-end_row) == 0 and abs(start_col-end_col) == 1):
                 if(color == "w"):
@@ -85,10 +85,7 @@ class Board:
                 else:
                     self.black_king_pos = (end_row, end_col)
                 self.enPassantable = None
-                if(color == "w"):
-                    self.castle = "xx" + self.castle[2] + self.castle[3]
-                else:
-                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                
                 return True
             elif(abs(start_row-end_row) == 1 and abs(start_col-end_col) == 0):
                 if(color == "w"):
@@ -96,12 +93,9 @@ class Board:
                 else:
                     self.black_king_pos = (end_row, end_col)
                 self.enPassantable = None
-                if(color == "w"):
-                    self.castle = "xx" + self.castle[2] + self.castle[3]
-                else:
-                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                
                 return True
-            elif(start_col - end_col == 2 and start_row == end_row and start_row == 7 and self.castle[1] == "Q" and color == "w"):
+            elif(start_col - end_col == 2 and start_row == end_row and start_row == 7 and self.wqCastle and color == "w"):
                 print("attempted castle Q")
                 for i in [0, 1, 2]:
                     opponent_color = 'b' if color == 'w' else 'w'
@@ -113,14 +107,11 @@ class Board:
                             if piece != '' and piece[0] == opponent_color:
                                 if self.is_valid_move(row, col, start_row, start_col - i, opponent_color):
                                     return False
-                if(color == "w"):
-                    self.castle = "xx" + self.castle[2] + self.castle[3]
-                else:
-                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                
                 self.board[7][0] = ''
                 self.board[7][3] = "wR"
                 return True
-            elif(end_col - start_col == 2 and start_row == end_row and start_row == 7 and self.castle[0] == "K" and color == "w"):
+            elif(end_col - start_col == 2 and start_row == end_row and start_row == 7 and self.wkCastle and color == "w"):
                 print("attempted castle")
                 for i in [0, 1, 2]:
                     if(self.board[start_row][start_col + i] != '' and i!= 0):
@@ -135,14 +126,11 @@ class Board:
                                 if self.is_valid_move(row, col, start_row, start_col + i, opponent_color):
                                     print("square attacked")
                                     return False
-                if(color == "w"):
-                    self.castle = "xx" + self.castle[2] + self.castle[3]
-                else:
-                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                
                 self.board[7][7] = ''
                 self.board[7][5] = "wR"
                 return True
-            elif(start_col - end_col == 2 and start_row == end_row and start_row == 0 and self.castle[3] == "Q" and color == "b"):
+            elif(start_col - end_col == 2 and start_row == end_row and start_row == 0 and self.bqCastle and color == "b"):
                 for i in [0, 1, 2]:
                     opponent_color = 'b' if color == 'w' else 'w'
                     if(self.board[start_row][start_col - i] != '' and i!= 0):
@@ -153,14 +141,11 @@ class Board:
                             if piece != '' and piece[0] == opponent_color:
                                 if self.is_valid_move(row, col, start_row, start_col - i, opponent_color):
                                     return False
-                if(color == "w"):
-                    self.castle = "xx" + self.castle[2] + self.castle[3]
-                else:
-                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                
                 self.board[0][0] = ''
                 self.board[0][3] = "wR"
                 return True
-            elif(end_col - start_col == 2 and start_row == end_row and start_row == 0 and self.castle[2] == "K" and color == "b"):
+            elif(end_col - start_col == 2 and start_row == end_row and start_row == 0 and self.bkCastle and color == "b"):
                 for i in [0, 1, 2]:
                     if(self.board[start_row][start_col + i] != '' and i!= 0):
                         return False
@@ -171,10 +156,7 @@ class Board:
                             if piece != '' and piece[0] == opponent_color:
                                 if self.is_valid_move(row, col, start_row, start_col + i, opponent_color):
                                     return False
-                if(color == "w"):
-                    self.castle = "xx" + self.castle[2] + self.castle[3]
-                else:
-                    self.castle = self.castle[0] + self.castle[1] + "xx"
+                
                 self.board[0][7] = ''
                 self.board[0][5] = "wR"
                 return True
@@ -205,14 +187,7 @@ class Board:
                 return False
                 
             self.enPassantable = None
-            if(start_col == 0 and color == "w" and start_row == 7):
-                self.castle == self.castle[0] + "x" + self.castle[2] + self.castle[3]
-            if(start_col == 7 and color == "w" and start_row == 7):
-                self.castle == "x" + self.castle[1] +  self.castle[2] + self.castle[3]
-            if(start_col == 0 and color == "w" and start_row == 0):
-                self.castle == self.castle[0]  + self.castle[1] + self.castle[2] + "x"
-            if(start_col == 7 and color == "w" and start_row == 0):
-                self.castle == self.castle[0] +  self.castle[1] + "x"  + self.castle[3]
+            
 
 
             return True
@@ -466,21 +441,26 @@ class Board:
             end_row = 7- (int(move[3]) - 1)
             piece = self.board[start_row][start_col]
             if(start_row == 7 and start_col == 0):
-                self.castle = self.castle[:1] + "x" + self.castle[2:]
+                self.wqCastle = False
             if(start_row == 7 and start_col == 7):
-                self.castle = "x" + self.castle[1:]
+                self.wkCastle = False
             if(start_row == 0 and start_col == 0):
-                self.castle = self.castle[:3] + "x"
+                self.bqCastle = False
             if(start_row == 0 and start_col == 7):
-                self.castle = self.castle[:2] + "x" + self.castle[3:]
+                self.bkCastle = False
             self.board[start_row][start_col] = ''
             self.board[end_row][end_col] = piece
             if(piece=="wK"):
-                self.castle = "xx" + self.castle[2:]
-                print("castling changed")
+                self.wkCastle = False
+                self.wqCastle = False
             if(piece == "bK"):
-                self.castle = self.castle[:1] + "xx"
+                self.bkCastle = False
+                self.bqCastle = False
 
+            if(piece == "wP" and end_row == 0):
+                self.board[end_row][end_col] = "wQ"
+            if(piece == "bP" and end_row == 7):
+                self.board[end_row][end_col] = "bQ"
             if(piece=="wK" and move == "e1g1"):
                 self.board[7][7] = ''
                 self.board[7][5] = "wR"

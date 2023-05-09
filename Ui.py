@@ -1,12 +1,18 @@
 
-from turtle import color
+
 import pygame
 from Board import Board
 from TreeEngine import TreeEngine
 import time
 from MovesList import MovesList
+from bob import bob
+
 import random
 
+
+
+
+import copy
 # Set up the Pygame window
 pygame.init()
 WIDTH = HEIGHT = 800
@@ -42,9 +48,11 @@ board = Board()
 SQUARE_SIZE = HEIGHT // 8
 FONT = pygame.font.SysFont('calibri', 30)
 
-scriptedmoves=[]
+# scriptedmoves=["e2e4", "e7e5", "f1c4", "b8c6", "d1h5", "a7a5"] #scholars mate
+scriptedmoves = ["e2e4", "e7e5", "g1f3", "b8c6"]
 list = MovesList()
-
+bob2 = bob(2)
+bob1 = bob(2)
 #  "c8g4", "g1f3", "b8c6", "d2d3", "e7e6", "c1g5", "f8b4", "b1c3", "g8f6"]
 
 # Draw the chess board
@@ -79,7 +87,7 @@ running = True
 print("enter moves in the notation: e2e4 (start pos + end pos_")
 turn = "w"
 movenum = 0
-randommove = TreeEngine(5)
+tree = TreeEngine(5)
 
 while running:
     time.sleep(.02)
@@ -103,10 +111,9 @@ while running:
         moves = list.get_legal_moves(board, turn)
         if movenum < len(scriptedmoves):
             move = scriptedmoves[movenum]
-            movenum += 1
             Moved = board.move(move, turn, moves)
         else:
-
+            boardcopy = copy.deepcopy(board)
             
             if(list.is_king_in_check(board, turn)):
                 
@@ -133,12 +140,18 @@ while running:
                 time.sleep(30)
 
             if(turn == "b"):
-
-                Moved = board.move(moves[random.randint(0, len(moves) - 1)], turn, moves)
+                move = bob2.get_best_move(copy.deepcopy(boardcopy), turn)
+                # move = list.get_legal_moves(boardcopy, turn)[random.randint(0, len(list.get_legal_moves(boardcopy, turn)) - 1)]
+                print(move)
+                Moved = board.move(move, turn, moves)
+                boardcopy = copy.deepcopy(board)
+                
             else:
-                print("your legal moves are: ")
-                print(moves)
-                Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
+                # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
+                move = bob1.get_best_move(copy.deepcopy(boardcopy), turn)
+                print(move)
+                Moved = board.move(move, turn, moves)
+                boardcopy = copy.deepcopy(board)
             
              
         
@@ -148,10 +161,11 @@ while running:
         turn = "b"
     else:
         turn = "w"
+    print("turn change")
     
     
 
     
-   
+
 
 pygame.quit()

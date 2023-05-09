@@ -1,3 +1,4 @@
+import copy
 class MovesList:
     def __init__(self):
         something = 0
@@ -29,10 +30,12 @@ class MovesList:
         return False
 
     def get_king_pos(self, color, board):
-        for row in range(len(board.board)):
-            for col in range(len(board.board[row])):
+        for row in range(8):
+            for col in range(8):
                 if board.board[row][col] == color + 'K':
                     return str(row) + str(col)
+        print("cant find king")
+        print(board.board)
     def is_king_in_check(self, board, color):
         king_pos = self.get_king_pos(color, board)
         opponent_color = 'b' if color == 'w' else 'w'
@@ -50,6 +53,7 @@ class MovesList:
         boardcopy = board  # create a copy of the board to avoid modifying the original
         for row in range(8):
             for col in range(8):
+                boardcopy = board
                 piece = boardcopy.board[row][col]
                 if piece != '' and piece[0] == color:
                     if piece[1] == "P" and color == "w":
@@ -102,9 +106,9 @@ class MovesList:
                     elif piece[1] == "K" and piece[0] == color:
                         movesopt = []
                         if(boardcopy.board[7][4] == "wK"):
-                            print(board.castle)
+                            
                             if self.move("e1g1", color, boardcopy):
-                                    print("move appended")
+                                    
                                     moves.append("e1g1")
                                     boardcopy = board
                             if self.move("e1c1", color, boardcopy):
@@ -159,6 +163,8 @@ class MovesList:
                                     moves.append(move)
                                     boardcopy = board
 
+        
+
         return moves
 
     def move(self, move, color, board):
@@ -202,6 +208,7 @@ class MovesList:
             
             
             return False
+
 
         if (self.is_valid_move(start_row, start_col, end_row, end_col, color, board)):
             swapped = board.board[end_row][end_col]
@@ -293,7 +300,7 @@ class MovesList:
                 board.enPassantable = None
                 
                 return True
-            elif(start_col - end_col == 2 and start_row == end_row and start_row == 7 and board.castle[1] == "Q" and color == "w"):
+            elif(start_col - end_col == 2 and start_row == end_row and start_row == 7 and board.wqCastle and color == "w"):
                 
                 for i in [0, 1, 2]:
                     opponent_color = 'b' if color == 'w' else 'w'
@@ -308,7 +315,7 @@ class MovesList:
                 
                 
                 return True
-            elif(end_col - start_col == 2 and start_row == end_row and start_row == 7 and board.castle[0] == "K" and color == "w"):
+            elif(end_col - start_col == 2 and start_row == end_row and start_row == 7 and board.wkCastle and color == "w"):
                 
                 for i in [0, 1, 2]:
                     if(board.board[start_row][start_col + i] != '' and i!= 0):
@@ -325,7 +332,7 @@ class MovesList:
                 
                 
                 return True
-            elif(start_col - end_col == 2 and start_row == end_row and start_row == 0 and board.castle[3] == "Q" and color == "b"):
+            elif(start_col - end_col == 2 and start_row == end_row and start_row == 0 and board.bqCastle and color == "b"):
                 for i in [0, 1, 2]:
                     opponent_color = 'b' if color == 'w' else 'w'
                     if(board.board[start_row][start_col - i] != '' and i!= 0):
@@ -339,7 +346,7 @@ class MovesList:
                 
                 
                 return True
-            elif(end_col - start_col == 2 and start_row == end_row and start_row == 0 and board.castle[2] == "K" and color == "b"):
+            elif(end_col - start_col == 2 and start_row == end_row and start_row == 0 and board.bkCastle and color == "b"):
                 for i in [0, 1, 2]:
                     if(board.board[start_row][start_col + i] != '' and i!= 0):
                         return False
