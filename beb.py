@@ -1,4 +1,3 @@
-from turtle import color
 import pygame
 import random
 from MovesList import MovesList
@@ -6,146 +5,69 @@ from Board import Board
 import copy
 import time
 from TranspositionTable import TranspositionTable
-class bob:
-    def __init__(self, depth):
+class beb:
+    def __init__(self, depth=3):
         self.depth = depth
         self.list = MovesList()
-        self.permeableboard = Board()
-        self.transposition_table = TranspositionTable()
+        self.transposition_table = TranspositionTable
 
+    def get_best_move(self, board, color):
 
-    def max_value(self, board, depth, alpha, beta):
-        tt_entry = self.transposition_table.lookup(board)
+        if color == "w":
+            best_move = None
+            max_evaluation = -float('inf')
+            for move in self.list.get_legal_moves(board, color):
+                
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
+                if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
+                    return move
+                evaluation = self.minimax(boardcopy, self.depth, color)
+                if evaluation > max_evaluation:
+                    max_evaluation = evaluation
+                    best_move = move
+            return best_move
+        else:
+            best_move = None
+            min_evaluation = float('inf')
+            for move in self.list.get_legal_moves(board, color):
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
+                if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
+                    return move
+                evaluation = self.minimax(boardcopy, self.depth, color)
+                if evaluation < min_evaluation:
+                    min_evaluation = evaluation
+                    best_move = move
+            return best_move
+
+    def minimax(self, position, depth, maximizing_player):
+        board = position
+        if (maximizing_player == "w"):
+            otherplayer = "b"
+        else:
+            otherplayer = "w"
+        if depth == 0 or not self.list.get_legal_moves(board, otherplayer):
+            return self.evaluate(board)
+
+        tt_entry = self.transposition_table.lookup(position)
         if tt_entry is not None and tt_entry[1] >= depth:
             return tt_entry[0]
-            
 
-        if depth == 0 or not self.list.get_legal_moves(board, "w"):
-            score = self.evaluate(board)
-            self.transposition_table.store(board, score, depth)
-            return score
-
-        max_score = float('-inf')
-        for move in self.list.get_legal_moves(board, "w"):
-            new_board = self.Test_Move(move, board)
-            score = self.min_value(new_board, depth - 1, alpha, beta)
-            max_score = max(max_score, score)
-            # if self.depth > depth + 1:
-            #     alpha = max(alpha, max_score)
-            #     if beta >= alpha:
-            #         break
-
-        self.transposition_table.store(board, max_score, depth) 
-        return max_score
-
-
-    def min_value(self, board, depth, alpha, beta):
-        tt_entry = self.transposition_table.lookup(board)
-            
-        # if tt_entry is not None and tt_entry[1] >= depth:
-        #     return tt_entry[0]
-            
-        if depth == 0 or not self.list.get_legal_moves(board, "b"):
-            score = self.evaluate(board)
-            self.transposition_table.store(board, score, depth)
-            return score
-
-        min_score = float('inf')
-        for move in self.list.get_legal_moves(board, "b"):
-            new_board = self.Test_Move(move, board)
-            score = self.max_value(new_board, depth - 1, alpha, beta)
-            min_score = min(min_score, score)
-            # if self.depth > depth + 1:
-            #     beta = min(beta, min_score)
-            #     if beta <= alpha:
-            #         break
-        self.transposition_table.store(board, min_score, depth) 
-        return min_score
-
-
-    def get_best_move(self, boardcopy, color):
-        board = copy.deepcopy(boardcopy)
-        start_time = time.time()
-        best_move = None
-        alpha = float('-inf')
-        beta = float('inf')
-        if color == "w":
-            max_score = float('-inf')
-            legal_moves = self.list.get_legal_moves(boardcopy, "w")
-            extraeval = 0
-            if(len(legal_moves) < 10):
-                extraeval += 1
-            if(self.piecesonboard(boardcopy) < 10):
-                extraeval += 2
-            if(self.piecesonboard(boardcopy) < 5):
-                extraeval += 5
-            if(self.piecesonboard(boardcopy) < 4):
-                extraeval += 5
-            if(self.piecesonboard(boardcopy) < 3):
-                extraeval += 5
-            n = len(legal_moves)
-            
-            i = 0
-            for move in legal_moves:
-                
-                new_board = self.Test_Move(move, copy.deepcopy(board))
-                if(self.list.get_legal_moves(new_board, "b") == [] and self.list.is_king_in_check(new_board, "b")):
-                    return move
-                score = self.min_value(new_board, self.depth - 1 + extraeval, alpha, beta)
-                print(score)
-                print(move)
-                if score > max_score:
-                    max_score = score
-                    best_move = move
-                if score == max_score:
-                    if(random.randint(0,3) == 0):
-                        max_score = score
-                        best_move = move
-                alpha = max(alpha, score)
-                i += 1
-                # print(f"\rProgress: {(i/n)*100}%", end='')
+        if maximizing_player == "w":
+            max_evaluation = -float('inf')
+            for move in self.list.get_legal_moves(position, maximizing_player):
+                boardcopy = self.Test_Move(move, copy.deepcopy(position))
+                evaluation = self.minimax(boardcopy, depth - 1, "b")
+                max_evaluation = max(max_evaluation, evaluation)
+            self.transposition_table.store(position, max_evaluation, depth) 
+            return max_evaluation
         else:
-            extraeval = 0
-            max_score = float('inf')
-            legal_moves = self.list.get_legal_moves(boardcopy, "b")
-            if(len(legal_moves) < 10):
-                extraeval += 1
-            if(self.piecesonboard(boardcopy) < 10):
-                extraeval += 2
-            if(self.piecesonboard(boardcopy) < 5):
-                extraeval += 5
-            if(self.piecesonboard(boardcopy) < 4):
-                extraeval += 5
-            if(self.piecesonboard(boardcopy) < 3):
-                extraeval += 5
-            
-            
-
-            
-
-            n = len(legal_moves)
-            i = 0
-            for move in legal_moves:
-                
-                new_board = self.Test_Move(move, copy.deepcopy(board))
-                if(self.list.get_legal_moves(new_board, "w") == [] and self.list.is_king_in_check(new_board, "w")):
-                    return move
-                score = self.max_value(new_board, self.depth - 1, alpha, beta)
-                print(score)
-                print(move)
-                if score < max_score:
-                    max_score = score
-                    best_move = move
-                if score == max_score:
-                    if(random.randint(0,2) == 0):
-                        max_score = score
-                        best_move = move
-                
-                beta = min(beta, score)
-                i += 1
-                # print(f"\rProgress: {(i/n)*100}%", end='')
-        return best_move
-    
+            min_evaluation = float('inf')
+            for move in self.list.get_legal_moves(position, maximizing_player):
+                boardcopy = self.Test_Move(move, copy.deepcopy(position))
+                evaluation = self.minimax(boardcopy, depth - 1, "w")
+                min_evaluation = min(min_evaluation, evaluation)
+            self.transposition_table.store(position, min_evaluation, depth) 
+            return min_evaluation
     def piecesonboard(self, board):
         pieces = 0
         for row in range(8):

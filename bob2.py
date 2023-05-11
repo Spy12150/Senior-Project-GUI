@@ -6,60 +6,44 @@ from Board import Board
 import copy
 import time
 from TranspositionTable import TranspositionTable
-class bob:
+class bob2:
     def __init__(self, depth):
         self.depth = depth
         self.list = MovesList()
         self.permeableboard = Board()
-        self.transposition_table = TranspositionTable()
 
 
     def max_value(self, board, depth, alpha, beta):
-        tt_entry = self.transposition_table.lookup(board)
-        if tt_entry is not None and tt_entry[1] >= depth:
-            return tt_entry[0]
+        if depth == 0 or self.list.get_legal_moves(board, "w") == []:
             
-
-        if depth == 0 or not self.list.get_legal_moves(board, "w"):
-            score = self.evaluate(board)
-            self.transposition_table.store(board, score, depth)
-            return score
+            return self.evaluate(board)
 
         max_score = float('-inf')
         for move in self.list.get_legal_moves(board, "w"):
-            new_board = self.Test_Move(move, board)
+            new_board = self.Test_Move(move, copy.deepcopy(board))
             score = self.min_value(new_board, depth - 1, alpha, beta)
             max_score = max(max_score, score)
-            # if self.depth > depth + 1:
-            #     alpha = max(alpha, max_score)
-            #     if beta >= alpha:
-            #         break
+            if(self.depth > depth + 1):
+                alpha = max(alpha, max_score)
+                if beta <= alpha:
+                    break
 
-        self.transposition_table.store(board, max_score, depth) 
         return max_score
 
-
     def min_value(self, board, depth, alpha, beta):
-        tt_entry = self.transposition_table.lookup(board)
-            
-        # if tt_entry is not None and tt_entry[1] >= depth:
-        #     return tt_entry[0]
-            
-        if depth == 0 or not self.list.get_legal_moves(board, "b"):
-            score = self.evaluate(board)
-            self.transposition_table.store(board, score, depth)
-            return score
+        if depth == 0 or self.list.get_legal_moves(board, "b") == []:
+            return self.evaluate(board)
 
         min_score = float('inf')
         for move in self.list.get_legal_moves(board, "b"):
-            new_board = self.Test_Move(move, board)
+            new_board = self.Test_Move(move, copy.deepcopy(board))
             score = self.max_value(new_board, depth - 1, alpha, beta)
             min_score = min(min_score, score)
-            # if self.depth > depth + 1:
-            #     beta = min(beta, min_score)
-            #     if beta <= alpha:
-            #         break
-        self.transposition_table.store(board, min_score, depth) 
+            if(self.depth > depth + 1):
+                beta = min(beta, min_score)
+                if beta <= alpha:
+                    break
+
         return min_score
 
 
@@ -92,8 +76,7 @@ class bob:
                 if(self.list.get_legal_moves(new_board, "b") == [] and self.list.is_king_in_check(new_board, "b")):
                     return move
                 score = self.min_value(new_board, self.depth - 1 + extraeval, alpha, beta)
-                print(score)
-                print(move)
+                
                 if score > max_score:
                     max_score = score
                     best_move = move
@@ -105,7 +88,6 @@ class bob:
                 i += 1
                 # print(f"\rProgress: {(i/n)*100}%", end='')
         else:
-            extraeval = 0
             max_score = float('inf')
             legal_moves = self.list.get_legal_moves(boardcopy, "b")
             if(len(legal_moves) < 10):
@@ -131,8 +113,7 @@ class bob:
                 if(self.list.get_legal_moves(new_board, "w") == [] and self.list.is_king_in_check(new_board, "w")):
                     return move
                 score = self.max_value(new_board, self.depth - 1, alpha, beta)
-                print(score)
-                print(move)
+
                 if score < max_score:
                     max_score = score
                     best_move = move
@@ -140,11 +121,16 @@ class bob:
                     if(random.randint(0,2) == 0):
                         max_score = score
                         best_move = move
-                
                 beta = min(beta, score)
                 i += 1
-                # print(f"\rProgress: {(i/n)*100}%", end='')
+                print(f"\rProgress: {(i/n)*100}%", end='')
         return best_move
+
+
+
+
+    def dist_from_center(self, row, col):
+        return abs(3.5 - row) + abs(3.5-col)
     
     def piecesonboard(self, board):
         pieces = 0
@@ -199,15 +185,15 @@ class bob:
                         score += kingEvalWhite[row][col]
                 elif(piece == "bK"):
                     if(self.piecesonboard(board) < 9):
-                        score -= kingEvalEndGameBlack[row][col]
+                        score += kingEvalEndGameBlack[row][col]
                     else:
-                        score -= kingEvalBlack[row][col]
+                        score += kingEvalBlack[row][col]
 
         
                     
-        if(self.list.get_legal_moves(copy.deepcopy(board), "b") == [] and self.list.is_king_in_check(copy.deepcopy(board), "b")):
+        if(self.list.get_legal_moves(board, "b") == [] and self.list.is_king_in_check(board, "b")):
             score = 999999
-        elif(self.list.get_legal_moves(copy.deepcopy(board), "w") == [] and self.list.is_king_in_check(copy.deepcopy(board), "w")):
+        elif(self.list.get_legal_moves(board, "w") == [] and self.list.is_king_in_check(board, "w")):
             score = -999999
             
         
@@ -255,7 +241,7 @@ pawnEvalBlack = [
     [0,  0,  0,  0,  0,  0,  0,  0],
     [5, 10, 10, -20, -20, 10, 10,  5],
     [5, -5, -10,  10,  10, -10, -5,  5],
-    [0,  -10,  -10, 20, 20,  -10,  -10,  0],
+    [0,  0,  0, 20, 20,  0,  0,  0],
     [5,  5, 10, 25, 25, 10,  5,  5],
     [10, 10, 20, 30, 30, 20, 10, 10],
     [50, 50, 50, 50, 50, 50, 50, 50],

@@ -34,8 +34,7 @@ class MovesList:
             for col in range(8):
                 if board.board[row][col] == color + 'K':
                     return str(row) + str(col)
-        print("cant find king")
-        print(board.board)
+        return "1234"
     def is_king_in_check(self, board, color):
         king_pos = self.get_king_pos(color, board)
         opponent_color = 'b' if color == 'w' else 'w'
@@ -92,7 +91,7 @@ class MovesList:
                                     moves.append(move)
                                     boardcopy = board
                     elif piece[1] == "N" and piece[0] == color:
-                        movesopt = {(-2,-1), (-1,-2),(-2,1),(1,-2),(2,-1),(-1,2),(2,1),(2,1)}
+                        movesopt = {(-2,-1), (-1,-2),(-2,1),(1,-2),(2,-1),(-1,2),(2,1),(1,2)}
                         for movenums in movesopt:
                             end_row, end_col = row + movenums[0], col + movenums[1]
                             if end_row >= 0 and end_col >= 0:
@@ -167,7 +166,8 @@ class MovesList:
 
         return moves
 
-    def move(self, move, color, board):
+    def move(self, move, color, boardcopy):
+        board = copy.deepcopy(boardcopy)
         if(len(move) != 4):
             
             return False
@@ -215,8 +215,14 @@ class MovesList:
             board.board[start_row][start_col] = ''
             board.board[end_row][end_col] = piece
             
+            
             if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
                 board.board[end_row][end_col] = piece[0] + "Q"
+
+            if(self.get_king_pos == "1234"):
+                board.board[start_row][start_col] = piece
+                board.board[end_row][end_col] = swapped
+                return False
             if(self.is_king_in_check(board, color)):
                 board.board[start_row][start_col] = piece
                 board.board[end_row][end_col] = swapped
@@ -254,7 +260,7 @@ class MovesList:
                     return True
                 if end_row == start_row - 1 and abs(end_col - start_col) == 1 and board.board[end_row][end_col] == '' and end_col == board.enPassantable:
                     board.enPassantable = None
-                    board.board[start_row][end_col] = ''
+                    # board.board[start_row][end_col] = ''
                     return True
             elif(color == "b"):
                 if(board.board[end_row][end_col] == '' and start_row-end_row == -1 and start_col == end_col):
@@ -269,7 +275,7 @@ class MovesList:
                     return True
                 if end_row == start_row + 1 and abs(end_col - start_col) == 1 and board.board[end_row][end_col] == '' and end_col == board.enPassantable:
                     board.enPassantable = None
-                    board.board[start_row][end_col] = ''
+                    # board.board[start_row][end_col] = ''
                     return True
             
             return False

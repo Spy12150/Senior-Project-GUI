@@ -475,177 +475,179 @@ class Board:
                 self.board[0][0] = ''
                 self.board[0][3] = "wR"
             return True
+        return False
         
         
 
-
-        if(len(move) != 4):
+    #     print("it gets here")
+    #     print("it gets here")
+    #     if(len(move) != 4):
             
-            return False
+    #         return False
         
-        start_col = ord(move[0]) - ord('a')
-        start_row = 7 - (int(move[1]) - 1)
-        end_col = ord(move[2]) - ord('a')
-        end_row = 7- (int(move[3]) - 1)
+    #     start_col = ord(move[0]) - ord('a')
+    #     start_row = 7 - (int(move[1]) - 1)
+    #     end_col = ord(move[2]) - ord('a')
+    #     end_row = 7- (int(move[3]) - 1)
 
         
 
-        if(len(str(start_col) + str(start_row) + str(end_col) + str(end_row)) != 4):
+    #     if(len(str(start_col) + str(start_row) + str(end_col) + str(end_row)) != 4):
             
-            return False
+    #         return False
 
-        if str(start_col) not in '01234567' or str(end_col) not in '01234567' or str(start_row) not in '01234567' or str(end_row) not in '01234567':
+    #     if str(start_col) not in '01234567' or str(end_col) not in '01234567' or str(start_row) not in '01234567' or str(end_row) not in '01234567':
             
-            return False
+    #         return False
 
-        piece = self.board[start_row][start_col]
+    #     piece = self.board[start_row][start_col]
 
-        if piece == '':
+    #     if piece == '':
             
-            return False
-        if(self.board[end_row][end_col] != ''):
-            if(self.board[end_row][end_col][0] == color):
+    #         return False
+    #     if(self.board[end_row][end_col] != ''):
+    #         if(self.board[end_row][end_col][0] == color):
                 
                 
-                return False
+    #             return False
 
 
-        if (self.board[start_row][start_col][0] != color):
+    #     if (self.board[start_row][start_col][0] != color):
             
-            return False
+    #         return False
 
-        if (self.is_valid_move(start_row, start_col, end_row, end_col, color)):
-            swapped = self.board[end_row][end_col]
-            self.board[start_row][start_col] = ''
-            self.board[end_row][end_col] = piece
-            if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
-                self.board[end_row][end_col] = piece[0] + "Q"
-            if(self.is_king_in_check(color)):
-                self.board[start_row][start_col] = piece
-                self.board[end_row][end_col] = swapped
+    #     if (self.is_valid_move(start_row, start_col, end_row, end_col, color)):
+    #         swapped = self.board[end_row][end_col]
+    #         self.board[start_row][start_col] = ''
+    #         self.board[end_row][end_col] = piece
+    #         if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
+    #             self.board[end_row][end_col] = piece[0] + "Q"
+    #         if(self.is_king_in_check(color)):
+    #             self.board[start_row][start_col] = piece
+    #             self.board[end_row][end_col] = swapped
                 
-                return False
+    #             return False
 
-        else: 
+    #     else: 
             
   
-            return False
+    #         return False
         
         
 
         
-        print(move)
-        return True
+    #     print(move)
+    #     return True
 
 
 
-    def get_king_pos(self, color):
-        for row in range(len(self.board)):
-            for col in range(len(self.board[row])):
-                if self.board[row][col] == color + 'K':
-                    return str(row) + str(col)
-    def is_king_in_check(self, color):
-        king_pos = self.white_king_pos if color == 'w' else self.black_king_pos
-        opponent_color = 'b' if color == 'w' else 'w'
-        for row in range(8):
-            for col in range(8):
-                piece = self.board[row][col]
-                if piece != '' and piece[0] == opponent_color:
+    # def get_king_pos(self, color):
+    #     for row in range(len(self.board)):
+    #         for col in range(len(self.board[row])):
+    #             if self.board[row][col] == color + 'K':
+    #                 return str(row) + str(col)
+    # def is_king_in_check(self, color):
+    #     king_pos = self.white_king_pos if color == 'w' else self.black_king_pos
+    #     opponent_color = 'b' if color == 'w' else 'w'
+    #     for row in range(8):
+    #         for col in range(8):
+    #             piece = self.board[row][col]
+    #             if piece != '' and piece[0] == opponent_color:
                     
-                    if self.is_valid_move(row, col, king_pos[0], king_pos[1], opponent_color):
-                        print(str(row) + ", " + str(col))
-                        print(str(king_pos[0]) + ", " + str(king_pos[1]))
-                        print(piece)
-                        return True
-        return False
+    #                 if self.is_valid_move(row, col, king_pos[0], king_pos[1], opponent_color):
+    #                     print(str(row) + ", " + str(col))
+    #                     print(str(king_pos[0]) + ", " + str(king_pos[1]))
+    #                     print(piece)
+    #                     return True
+    #     return False
 
-    def get_squares_in_between(self, start_coord, end_coord):
+    # def get_squares_in_between(self, start_coord, end_coord):
         
-        # Convert the algebraic notation to (x, y) coordinates
+    #     # Convert the algebraic notation to (x, y) coordinates
         
 
-        start_x = int(start_coord[0])
-        start_y = int(start_coord[1])
-        end_x = int(end_coord[0])
-        end_y = int(end_coord[1])
+    #     start_x = int(start_coord[0])
+    #     start_y = int(start_coord[1])
+    #     end_x = int(end_coord[0])
+    #     end_y = int(end_coord[1])
 
-        # Calculate the direction of the movement
-        dx = end_x - start_x
-        dy = end_y - start_y
+    #     # Calculate the direction of the movement
+    #     dx = end_x - start_x
+    #     dy = end_y - start_y
 
-        # Check that the movement is diagonal, horizontal, or vertical
-        if dx != 0 and dy != 0 and abs(dx) != abs(dy):
-            return []
+    #     # Check that the movement is diagonal, horizontal, or vertical
+    #     if dx != 0 and dy != 0 and abs(dx) != abs(dy):
+    #         return []
 
-        # Calculate the step size for each coordinate
-        step_x = 1 if dx > 0 else -1 if dx < 0 else 0
-        step_y = 1 if dy > 0 else -1 if dy < 0 else 0
+    #     # Calculate the step size for each coordinate
+    #     step_x = 1 if dx > 0 else -1 if dx < 0 else 0
+    #     step_y = 1 if dy > 0 else -1 if dy < 0 else 0
 
-        # Calculate the number of steps to take in each coordinate
-        num_steps = abs(dx) if dx != 0 else abs(dy)
+    #     # Calculate the number of steps to take in each coordinate
+    #     num_steps = abs(dx) if dx != 0 else abs(dy)
 
-        # Calculate the coordinates of the squares in between
-        squares_in_between = []
-        for i in range(1, num_steps):
-            x = start_x + i * step_x
-            y = start_y + i * step_y
-            squares_in_between.append(str(x) + str(y))
+    #     # Calculate the coordinates of the squares in between
+    #     squares_in_between = []
+    #     for i in range(1, num_steps):
+    #         x = start_x + i * step_x
+    #         y = start_y + i * step_y
+    #         squares_in_between.append(str(x) + str(y))
 
-        return squares_in_between
+    #     return squares_in_between
 
-    def is_checkmate(self,color):
-        replacableboard = self.board
-        if(not self.is_king_in_check(color)):
-            print("no check")
-            return False
+    # def is_checkmate(self,color):
+    #     replacableboard = self.board
+    #     if(not self.is_king_in_check(color)):
+    #         print("no check")
+    #         return False
 
-        print("king is in")
+    #     print("king is in")
 
-        moves = self.get_legal_moves(color)
+    #     moves = self.get_legal_moves(color)
 
-        for move in moves:
-            start_col = ord(move[0]) - ord('a')
-            start_row = 7 - (int(move[1]) - 1)
-            end_col = ord(move[2]) - ord('a')
-            end_row = 7- (int(move[3]) - 1)
-            piece = self.board[start_row][start_col]
-            swapped = self.board[end_row][end_col]
-            self.board[start_row][start_col] = ''
-            self.board[end_row][end_col] = piece
-            if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
-                self.board[end_row][end_col] = piece[0] + "Q"
-            if(self.is_king_in_check(color)):
-                self.board[start_row][start_col] = piece
-                self.board[end_row][end_col] = swapped
+    #     for move in moves:
+    #         start_col = ord(move[0]) - ord('a')
+    #         start_row = 7 - (int(move[1]) - 1)
+    #         end_col = ord(move[2]) - ord('a')
+    #         end_row = 7- (int(move[3]) - 1)
+    #         piece = self.board[start_row][start_col]
+    #         swapped = self.board[end_row][end_col]
+    #         self.board[start_row][start_col] = ''
+    #         self.board[end_row][end_col] = piece
+    #         if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
+    #             self.board[end_row][end_col] = piece[0] + "Q"
+    #         if(self.is_king_in_check(color)):
+    #             self.board[start_row][start_col] = piece
+    #             self.board[end_row][end_col] = swapped
                 
-                return False   
-        if(len(moves) != 0):
-            return False
-        return True
-    def is_stalemate(self, color, moves):
-        if(self.is_king_in_check(color)):
-            return False
+    #             return False   
+    #     if(len(moves) != 0):
+    #         return False
+    #     return True
+    # def is_stalemate(self, color, moves):
+    #     if(self.is_king_in_check(color)):
+    #         return False
 
         
-        if (len(moves) == 0):
-            return True
+    #     if (len(moves) == 0):
+    #         return True
 
-        pieces = []
-        for row in range(8):
-            for col in range(8):
-                piece = self.board[row][col]
-                if piece != '' and piece[1] != "K":
-                    pieces.append("piece")
-                    if(len(pieces) > 2):
-                        return False
-        if(len(pieces) == 0):
-            return True
-        if(len(pieces) == 1 and (pieces[0][1] == "N" or pieces[0][1] == "B")):
-            return True
-        if(len(pieces) == 1 and (pieces[0][1] == "N" and pieces[1][1] == "N")):
-            return True
+    #     pieces = []
+    #     for row in range(8):
+    #         for col in range(8):
+    #             piece = self.board[row][col]
+    #             if piece != '' and piece[1] != "K":
+    #                 pieces.append("piece")
+    #                 if(len(pieces) > 2):
+    #                     return False
+    #     if(len(pieces) == 0):
+    #         return True
+    #     if(len(pieces) == 1 and (pieces[0][1] == "N" or pieces[0][1] == "B")):
+    #         return True
+    #     if(len(pieces) == 1 and (pieces[0][1] == "N" and pieces[1][1] == "N")):
+    #         return True
 
-        return False
+    #     return False
     
             
             
