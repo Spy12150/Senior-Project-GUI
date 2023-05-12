@@ -46,18 +46,19 @@ images["bN"] = pygame.transform.scale(pygame.image.load('data/imgs/bN.png'), (80
 images["bP"] = pygame.transform.scale(pygame.image.load('data/imgs/bP.png'), (80, 80))
 
 # Define the chess board
-board = Board()
+
 # Define the square size and font
 SQUARE_SIZE = HEIGHT // 8
 FONT = pygame.font.SysFont('calibri', 30)
 
 # scriptedmoves=["e2e4", "e7e5", "f1c4", "b8c6", "d1h5", "a7a5"] #scholars mate
-scriptedmoves = ["e2e4", "e7e5", "g1f3", "b8c6", "f3e5"]
+# scriptedmoves = ["e2e4", "e7e5", "g1f3", "b8c6", "f3e5"]
+scriptedmoves = []
 list = MovesList()
 bobtwo = bob2(2)
-bobone = bob(3)
+bobone = bob(1)
 jeff = jef(3)
-bleb = beb(4)
+bleb = beb(2)
 bobthree = bob3(2)
 #  "c8g4", "g1f3", "b8c6", "d2d3", "e7e6", "c1g5", "f8b4", "b1c3", "g8f6"]
 
@@ -86,93 +87,113 @@ def draw_coordinates():
         win.blit(text, (i * SQUARE_SIZE + 80, HEIGHT - 30))
 
 
-
+games = True
+bwins = 0
+wwins = 0
+while games:
+    print("black wins" + str(bwins))
+    print("white wins" + str(wwins))
+    board = Board()
 # Main game loop
-running = True
+    # Main game loop
+    running = True
 
-print("enter moves in the notation: e2e4 (start pos + end pos_")
-turn = "w"
-movenum = 0
-tree = TreeEngine(5)
+    print("enter moves in the notation: e2e4 (start pos + end pos_")
+    turn = "w"
+    movenum = 0
+    tree = TreeEngine(5)
+    boards = []
 
-while running:
-    time.sleep(.02)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        
 
-     # Draw the board and pieces
-    draw_board()
-    draw_coordinates()
+        # Draw the board and pieces
+        draw_board()
+        draw_coordinates()
 
-    # Check if the game is over
-    pygame.display.update()
-    
-            
-
-    
-    Moved = False
-    while(not Moved):
-        moves = list.get_legal_moves(board, turn)
-        if movenum < len(scriptedmoves):
-            move = scriptedmoves[movenum]
-            Moved = board.move(move, turn, moves)
-        else:
-            boardcopy = copy.deepcopy(board)
-            
-            if(list.is_king_in_check(board, turn)):
+        # Check if the game is over
+        pygame.display.update()
+        
                 
-                print(turn + "king in check")
-                
-            
-            
-            if(moves == [] and list.is_king_in_check(board, turn)):
-                if turn == "b":
-                    print("game is over by checkmate")
-                    print("w" + " Wins!")
-                else:
-                    print("game is over by checkmate")
-                    print("b" + " Wins!")
-                running = False
-                time.sleep(30)
-            elif(moves == []):
-                print("The game is a draw")
-                running = False
-                time.sleep(30)
-            elif(list.is_stalemate(turn, moves, board)):
-                print("The game is a draw")
-                running = False
-                time.sleep(30)
 
-            if(turn == "b"):
-                move = bleb.get_best_move(copy.deepcopy(boardcopy), turn)
-                # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
-                # move = list.get_legal_moves(boardcopy, turn)[random.randint(0, len(list.get_legal_moves(boardcopy, turn)) - 1)]
-                print(move)
+        
+        Moved = False
+        while(not Moved):
+            moves = list.get_legal_moves(board, turn)
+            if movenum < len(scriptedmoves):
+                move = scriptedmoves[movenum]
                 Moved = board.move(move, turn, moves)
-                boardcopy = copy.deepcopy(board)
-                
             else:
-                # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
-                move = bleb.get_best_move(copy.deepcopy(boardcopy), turn)
-                print(move)
-                Moved = board.move(move, turn, moves)
                 boardcopy = copy.deepcopy(board)
-            
-             
-        
-        
-    movenum += 1
-    if(turn == "w"):
-        turn = "b"
-    else:
-        turn = "w"
-    print("turn change")
-    
-    
+                if(boardcopy in boards):
+                    running = False
+                    moved = True
+                    break
 
-    
+                boards.append(boardcopy)
+                
+                if(list.is_king_in_check(board, turn)):
+                    
+                    print(turn + "king in check")
+                    
+                
+                
+                if(moves == [] and list.is_king_in_check(board, turn)):
+                    if turn == "b":
+                        print("game is over by checkmate")
+                        print("w" + " Wins!")
+                        bwins +=1
+                    else:
+                        print("game is over by checkmate")
+                        print("b" + " Wins!")
+                        wwins +=1
+                    running = False
+                    moved = True
+                    
+                elif(moves == []):
+                    print("The game is a draw")
+                    running = False
+                    moved = True
+                    
+                elif(list.is_stalemate(turn, moves, board)):
+                    print("The game is a draw")
+                    running = False
+                    moved = True
+                
+                    
+
+                elif(turn == "b"):
+                    move = bobtwo.get_best_move(copy.deepcopy(boardcopy), turn)
+                    # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
+                    # move = list.get_legal_moves(boardcopy, turn)[random.randint(0, len(list.get_legal_moves(boardcopy, turn)) - 1)]
+                    print(move)
+                    Moved = board.move(move, turn, moves)
+                    boardcopy = copy.deepcopy(board)
+                    
+                    
+                else:
+                    # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
+                    move = bobthree.get_best_move(copy.deepcopy(boardcopy), turn)
+                    print(move)
+                    Moved = board.move(move, turn, moves)
+
+                
+                
+            
+            
+        movenum += 1
+        if(turn == "w"):
+            turn = "b"
+        else:
+            turn = "w"
+        
+        
+        
+
+        
 
 
 pygame.quit()

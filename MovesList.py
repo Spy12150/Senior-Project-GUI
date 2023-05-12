@@ -46,6 +46,325 @@ class MovesList:
                     if self.is_valid_move(row, col, int(king_pos[0]), int(king_pos[1]), opponent_color, board):
                         return True
         return False
+    
+    def isTempo(self, piece, start_row, start_col,  board):
+        color = piece[0]
+        if piece[1] == "P" and color == "w":
+            movesopt = {(-1,-1), (-1,1)}
+            for movenums in movesopt:
+                end_row, end_col = start_row + movenums[0],start_col + movenums[1]
+                
+                if end_row >= 0 and end_col >= 0:
+                    move = chr(ord('a') + start_col) + str(8 - start_row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                    
+                    
+                    
+                    if self.capture(move, color, board):
+                        return True
+                    return False
+                    
+
+        elif piece[1] == "P" and color == "b":
+            movesopt = {(1,-1), (1,1), (1,0), (2,0)}
+            for movenums in movesopt:
+                end_row, end_col = start_row + movenums[0],start_col + movenums[1]
+                
+                if end_row >= 0 and end_col >= 0:
+                    move = chr(ord('a') + start_col) + str(8 - start_row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                    
+                    
+                    
+                    if self.capture(move, color, board):
+                        return True
+                    return False
+        elif piece[1] == "R" and piece[0] == color:
+            movesopt = []
+            for i in range(17):
+                movesopt.append((0,i - 8))
+            for i in range(17):
+                movesopt.append((i - 8,0))
+            for movenums in movesopt:
+                end_row, end_col = start_row + movenums[0],start_col + movenums[1]
+                
+                if end_row >= 0 and end_col >= 0:
+                    move = chr(ord('a') + start_col) + str(8 - start_row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                    
+                    
+                    
+                    if self.capture(move, color, board):
+                        return True
+                    return False
+        elif piece[1] == "N" and piece[0] == color:
+            movesopt = {(-2,-1), (-1,-2),(-2,1),(1,-2),(2,-1),(-1,2),(2,1),(1,2)}
+            for movenums in movesopt:
+                end_row, end_col = start_row + movenums[0],start_col + movenums[1]
+                
+                if end_row >= 0 and end_col >= 0:
+                    move = chr(ord('a') + start_col) + str(8 - start_row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                    
+                    
+                    
+                    if self.capture(move, color, board):
+                        return True
+                    return False
+        elif piece[1] == "K" and piece[0] == color:
+            movesopt = []
+            for i in [-1,0,1]:
+                for j in [-1, 0, 1]:
+                    movesopt.append((i,j))
+            
+            for movenums in movesopt:
+                end_row, end_col = start_row + movenums[0],start_col + movenums[1]
+                
+                if end_row >= 0 and end_col >= 0:
+                    move = chr(ord('a') + start_col) + str(8 - start_row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                    
+                    
+                    
+                    if self.capture(move, color, board):
+                        return True
+                    return False
+        elif piece[1] == "B" and piece[0] == color:
+            movesopt = []
+            for i in range(17):
+                movesopt.append((i-8,i - 8))
+            for i in range(17):
+                movesopt.append((i - 8,-i + 8))
+            for movenums in movesopt:
+                end_row, end_col = start_row + movenums[0],start_col + movenums[1]
+                
+                if end_row >= 0 and end_col >= 0:
+                    move = chr(ord('a') + start_col) + str(8 - start_row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                    
+                    
+                    
+                    if self.capture(move, color, board):
+                        return True
+                    return False
+        elif piece[1] == "Q" and piece[0] == color:
+            movesopt = []
+            for i in range(17):
+                movesopt.append((0,i - 8))
+            for i in range(17):
+                movesopt.append((i - 8,0))
+            for i in range(17):
+                movesopt.append((i-8,i - 8))
+            for i in range(17):
+                movesopt.append((i - 8,-i + 8))
+            for movenums in movesopt:
+                end_row, end_col = start_row + movenums[0],start_col + movenums[1]
+                
+                if end_row >= 0 and end_col >= 0:
+                    move = chr(ord('a') + start_col) + str(8 - start_row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                    
+                    
+                    
+                    if self.capture(move, color, board):
+                        return True
+                    return False
+    
+    def get_captures(self, board, color):
+        moves = []
+        boardcopy = board  # create a copy of the board to avoid modifying the original
+        for row in range(8):
+            for col in range(8):
+                boardcopy = board
+                piece = boardcopy.board[row][col]
+                if piece != '' and piece[0] == color:
+                    if piece[1] == "P" and color == "w":
+                        movesopt = {(-1,-1), (-1,1), (-1,0), (-2,0)}
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                
+                                
+                                
+                                if self.capture(move, color, boardcopy):
+                                    moves.append(move)
+                                    boardcopy = board
+                    elif piece[1] == "P" and color == "b":
+                        movesopt = {(1,-1), (1,1), (1,0), (2,0)}
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                if self.capture(move, color, boardcopy):
+                                    moves.append(move)
+                                    boardcopy = board
+                    elif piece[1] == "R" and piece[0] == color:
+                        movesopt = []
+                        for i in range(17):
+                            movesopt.append((0,i - 8))
+                        for i in range(17):
+                            movesopt.append((i - 8,0))
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                if self.capture(move, color, boardcopy):
+                                    moves.append(move)
+                                    boardcopy = board
+                    elif piece[1] == "N" and piece[0] == color:
+                        movesopt = {(-2,-1), (-1,-2),(-2,1),(1,-2),(2,-1),(-1,2),(2,1),(1,2)}
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                
+                                
+                                if self.capture(move, color, boardcopy):
+                                    moves.append(move)
+                                    
+                                    boardcopy = board
+                    elif piece[1] == "K" and piece[0] == color:
+                        movesopt = []
+                        if(boardcopy.board[7][4] == "wK"):
+                            
+                            if self.capture("e1g1", color, boardcopy):
+                                    
+                                    moves.append("e1g1")
+                                    boardcopy = board
+                            if self.capture("e1c1", color, boardcopy):
+                                    moves.append("e1c1")
+                                    boardcopy = board
+                        if(boardcopy.board[0][4] == "bK"):
+                            if self.capture("e8g8", color, boardcopy):
+                                    moves.append("e8g8")
+                                    boardcopy = board
+                            if self.capture("e8c8", color, boardcopy):
+                                    moves.append("e8c8")
+                                    boardcopy = board
+                        for i in [-1,0,1]:
+                            for j in [-1, 0, 1]:
+                                movesopt.append((i,j))
+                        
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            if end_row >= 0 and end_col >= 0:
+                                move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                                
+                                if self.capture(move, color, boardcopy):
+                                    moves.append(move)
+                                    boardcopy = board
+                    elif piece[1] == "B" and piece[0] == color:
+                        movesopt = []
+                        for i in range(17):
+                            movesopt.append((i-8,i - 8))
+                        for i in range(17):
+                            movesopt.append((i - 8,-i + 8))
+                        for movenums in movesopt:
+                            end_row, end_col = row + movenums[0], col + movenums[1]
+                            move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + end_col) + str(8 - end_row )
+                            
+                            if self.capture(move, color, boardcopy):
+                                    moves.append(move)
+                                    boardcopy = board
+                    elif piece[1] == "Q" and piece[0] == color:
+                        movesopt = []
+                        for i in range(17):
+                            movesopt.append((0,i - 8))
+                        for i in range(17):
+                            movesopt.append((i - 8,0))
+                        for i in range(17):
+                            movesopt.append((i-8,i - 8))
+                        for i in range(17):
+                            movesopt.append((i - 8,-i + 8))
+                        for movenums in movesopt:
+                            move = chr(ord('a') + col) + str(8 - row)+ chr(ord('a') + col + movenums[1]) + str(8 - row + movenums[0])
+                            
+                            if self.capture(move, color, boardcopy):
+                                    moves.append(move)
+                                    boardcopy = board
+
+        
+
+        return moves
+    
+    def capture(self, move, color, boardcopy):
+        board = copy.deepcopy(boardcopy)
+        if(len(move) != 4):
+            
+            return False
+        
+        start_col = ord(move[0]) - ord('a')
+        start_row = 7 - (int(move[1]) - 1)
+        end_col = ord(move[2]) - ord('a')
+        end_row = 7- (int(move[3]) - 1)
+        
+
+        
+
+        if(len(str(start_col) + str(start_row) + str(end_col) + str(end_row)) != 4):
+            
+            return False
+
+        
+
+        if str(start_col) not in '01234567' or str(end_col) not in '01234567' or str(start_row) not in '01234567' or str(end_row) not in '01234567':
+            
+            return False
+
+        piece = board.board[start_row][start_col]
+
+        if piece == '':
+            
+            
+            return False
+        if(board.board[end_row][end_col] != ''):
+            if(board.board[end_row][end_col][0] == color):
+                
+                
+                
+                return False
+
+
+        if (board.board[start_row][start_col][0] != color):
+            
+            
+            return False
+
+
+        if (self.is_valid_move(start_row, start_col, end_row, end_col, color, board)):
+            swapped = board.board[end_row][end_col]
+            if color == "w":
+                othercolor = "b"
+            else:
+                othercolor = "w"
+            
+            board.board[start_row][start_col] = ''
+            board.board[end_row][end_col] = piece
+            if(swapped == '' ):
+                if not self.is_king_in_check(board, othercolor):
+                    return False
+            
+            if((piece == "wP" and end_row == 0) or (piece == "bP" and end_row == 7)):
+                board.board[end_row][end_col] = piece[0] + "Q"
+
+            if(self.get_king_pos == "1234"):
+                board.board[start_row][start_col] = piece
+                board.board[end_row][end_col] = swapped
+                return False
+            if(self.is_king_in_check(board, color)):
+                board.board[start_row][start_col] = piece
+                board.board[end_row][end_col] = swapped
+                
+                
+                return False
+            board.board[start_row][start_col] = piece
+            board.board[end_row][end_col] = swapped
+
+        else: 
+            
+            
+            return False
+        
+        
+
+        
+        
+        return True
         
     def get_legal_moves(self, board, color):
         moves = []

@@ -1,4 +1,3 @@
-from turtle import color
 import pygame
 import random
 from MovesList import MovesList
@@ -10,142 +9,131 @@ class bob:
     def __init__(self, depth):
         self.depth = depth
         self.list = MovesList()
-        self.permeableboard = Board()
         self.transposition_table = TranspositionTable()
 
+    def get_best_move(self, board, color):
 
-    def max_value(self, board, depth, alpha, beta):
+        moves = self.list.get_legal_moves(board, color)
+
+        n = len(moves)
+            
+        i = 0
+        
+
+
+        if color == "w":
+            best_move = None
+            max_evaluation = -float('inf')
+            for move in moves:
+                
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
+                if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
+                    return move
+                if self.piecesonboard(boardcopy) < 4:
+                    evaluation = self.minimax(boardcopy, 6, "b")
+                else:
+                    evaluation = self.minimax_captures(boardcopy, 3, "b",self.evaluate(boardcopy))
+                i += 1
+                print(f"\rProgress: {(i/n)*100}%", end='')
+                if evaluation > max_evaluation:
+                    max_evaluation = evaluation
+                    best_move = move
+            return best_move
+        else:
+            best_move = None
+            min_evaluation = float('inf')
+            for move in moves:
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
+                if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
+                    return move
+                
+                if self.piecesonboard(boardcopy) < 4:
+                    evaluation = self.minimax(boardcopy, 6, "w")
+                else:
+                    evaluation = self.minimax_captures(boardcopy, 3, "w", self.evaluate(boardcopy))
+                i += 1
+                
+                print(f"\rProgress: {(i/n)*100}%", end='')
+                if evaluation < min_evaluation:
+                    min_evaluation = evaluation
+                    best_move = move
+            return best_move
+        
+    def minimax_captures(self, board, depth, color, initeval):
+
+        captures = self.list.get_captures(board, color)
+        
+        if len(captures) == 0 or depth == 0:
+            return self.evaluate(board)
+
+        if (color == "w"):
+            otherplayer = "b"
+        else:
+            otherplayer = "w"
+        if color == "w":
+            max_evaluation = -float('inf')
+            for move in captures:
+                
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
+                if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
+                    return 999999
+                currenteval = self.evaluate(boardcopy)
+                if(currenteval < initeval):
+                    return currenteval
+                evaluation = self.minimax_captures(boardcopy, depth - 1, "b", initeval)
+                max_evaluation = max(max_evaluation, evaluation)
+
+            if(max_evaluation < initeval):
+                max_evaluation = initeval
+            self.transposition_table.store(board, max_evaluation, depth) 
+            return max_evaluation
+        else:
+            min_evaluation = float('inf')
+            for move in captures:
+                
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
+                if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
+                    return -999999
+                currenteval = self.evaluate(boardcopy)
+                if(currenteval > initeval):
+                    return currenteval
+                evaluation = self.minimax_captures(boardcopy, depth - 1, "w", initeval)                                                               
+                min_evaluation = min(min_evaluation, evaluation)
+            if(min_evaluation > initeval):
+                min_evaluation = initeval
+            self.transposition_table.store(board, min_evaluation, depth) 
+            return min_evaluation
+        
+
+    def minimax(self, board, depth, color):
+        board = board
+        if (color == "w"):
+            otherplayer = "b"
+        else:
+            otherplayer = "w"
+        if depth == 0 or not self.list.get_legal_moves(board, color):
+            return self.minimax_captures(board, depth, color)
+
         tt_entry = self.transposition_table.lookup(board)
         if tt_entry is not None and tt_entry[1] >= depth:
             return tt_entry[0]
-            
 
-        if depth == 0 or not self.list.get_legal_moves(board, "w"):
-            score = self.evaluate(board)
-            self.transposition_table.store(board, score, depth)
-            return score
-
-        max_score = float('-inf')
-        for move in self.list.get_legal_moves(board, "w"):
-            new_board = self.Test_Move(move, board)
-            score = self.min_value(new_board, depth - 1, alpha, beta)
-            max_score = max(max_score, score)
-            # if self.depth > depth + 1:
-            #     alpha = max(alpha, max_score)
-            #     if beta >= alpha:
-            #         break
-
-        self.transposition_table.store(board, max_score, depth) 
-        return max_score
-
-
-    def min_value(self, board, depth, alpha, beta):
-        tt_entry = self.transposition_table.lookup(board)
-            
-        # if tt_entry is not None and tt_entry[1] >= depth:
-        #     return tt_entry[0]
-            
-        if depth == 0 or not self.list.get_legal_moves(board, "b"):
-            score = self.evaluate(board)
-            self.transposition_table.store(board, score, depth)
-            return score
-
-        min_score = float('inf')
-        for move in self.list.get_legal_moves(board, "b"):
-            new_board = self.Test_Move(move, board)
-            score = self.max_value(new_board, depth - 1, alpha, beta)
-            min_score = min(min_score, score)
-            # if self.depth > depth + 1:
-            #     beta = min(beta, min_score)
-            #     if beta <= alpha:
-            #         break
-        self.transposition_table.store(board, min_score, depth) 
-        return min_score
-
-
-    def get_best_move(self, boardcopy, color):
-        board = copy.deepcopy(boardcopy)
-        start_time = time.time()
-        best_move = None
-        alpha = float('-inf')
-        beta = float('inf')
         if color == "w":
-            max_score = float('-inf')
-            legal_moves = self.list.get_legal_moves(boardcopy, "w")
-            extraeval = 0
-            if(len(legal_moves) < 10):
-                extraeval += 1
-            if(self.piecesonboard(boardcopy) < 10):
-                extraeval += 2
-            if(self.piecesonboard(boardcopy) < 5):
-                extraeval += 5
-            if(self.piecesonboard(boardcopy) < 4):
-                extraeval += 5
-            if(self.piecesonboard(boardcopy) < 3):
-                extraeval += 5
-            n = len(legal_moves)
-            
-            i = 0
-            for move in legal_moves:
-                
-                new_board = self.Test_Move(move, copy.deepcopy(board))
-                if(self.list.get_legal_moves(new_board, "b") == [] and self.list.is_king_in_check(new_board, "b")):
-                    return move
-                score = self.min_value(new_board, self.depth - 1 + extraeval, alpha, beta)
-                print(score)
-                print(move)
-                if score > max_score:
-                    max_score = score
-                    best_move = move
-                if score == max_score:
-                    if(random.randint(0,3) == 0):
-                        max_score = score
-                        best_move = move
-                alpha = max(alpha, score)
-                i += 1
-                # print(f"\rProgress: {(i/n)*100}%", end='')
+            max_evaluation = -float('inf')
+            for move in self.list.get_legal_moves(board, color):
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
+                evaluation = self.minimax(boardcopy, depth - 1, "b")
+                max_evaluation = max(max_evaluation, evaluation)
+            self.transposition_table.store(board, max_evaluation, depth) 
+            return max_evaluation
         else:
-            extraeval = 0
-            max_score = float('inf')
-            legal_moves = self.list.get_legal_moves(boardcopy, "b")
-            if(len(legal_moves) < 10):
-                extraeval += 1
-            if(self.piecesonboard(boardcopy) < 10):
-                extraeval += 2
-            if(self.piecesonboard(boardcopy) < 5):
-                extraeval += 5
-            if(self.piecesonboard(boardcopy) < 4):
-                extraeval += 5
-            if(self.piecesonboard(boardcopy) < 3):
-                extraeval += 5
-            
-            
-
-            
-
-            n = len(legal_moves)
-            i = 0
-            for move in legal_moves:
-                
-                new_board = self.Test_Move(move, copy.deepcopy(board))
-                if(self.list.get_legal_moves(new_board, "w") == [] and self.list.is_king_in_check(new_board, "w")):
-                    return move
-                score = self.max_value(new_board, self.depth - 1, alpha, beta)
-                print(score)
-                print(move)
-                if score < max_score:
-                    max_score = score
-                    best_move = move
-                if score == max_score:
-                    if(random.randint(0,2) == 0):
-                        max_score = score
-                        best_move = move
-                
-                beta = min(beta, score)
-                i += 1
-                # print(f"\rProgress: {(i/n)*100}%", end='')
-        return best_move
-    
+            min_evaluation = float('inf')
+            for move in self.list.get_legal_moves(board, color):
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
+                evaluation = self.minimax(boardcopy, depth - 1, "w")
+                min_evaluation = min(min_evaluation, evaluation)
+            self.transposition_table.store(board, min_evaluation, depth) 
+            return min_evaluation
     def piecesonboard(self, board):
         pieces = 0
         for row in range(8):
@@ -253,9 +241,9 @@ class bob:
         return boardcopy
 pawnEvalBlack = [
     [0,  0,  0,  0,  0,  0,  0,  0],
-    [5, 10, 10, -20, -20, 10, 10,  5],
-    [5, -5, -10,  10,  10, -10, -5,  5],
-    [0,  -10,  -10, 20, 20,  -10,  -10,  0],
+    [7, 5, 10, 10, 10, 10, 5,  7],
+    [5, 10, -10,  15,  15, -10, 10,  5],
+    [0,-10, -10,  -10, 20, 20,  -10,  -10,  0],
     [5,  5, 10, 25, 25, 10,  5,  5],
     [10, 10, 20, 30, 30, 20, 10, 10],
     [50, 50, 50, 50, 50, 50, 50, 50],
@@ -266,7 +254,7 @@ pawnEvalWhite = list(reversed(pawnEvalBlack))
 knightEval = [
     [-50, -20, -30, -30, -30, -30, -20, -50],
     [-40, -20, 0, 0, 0, 0, -20, -40],
-    [-30, 0, 10, 15, 15, 10, 0, -30],
+    [-30, 0, 9, 15, 15, 9, 0, -30],
     [-30, 5, 15, 20, 20, 15, 5, -30],
     [-30, 0, 15, 20, 20, 15, 0, -30],
     [-30, 5, 10, 15, 15, 10, 5, -30],
@@ -276,7 +264,7 @@ knightEval = [
 
 bishopEvalBlack = [
     [-20, -10, -10, -10, -10, -10, -10, -20],
-    [-10, 5, 0, 0, 0, 0, 5, -10],
+    [-10, 10, 0, 0, 0, 0, 10, -10],
     [-10, 10, 10, 10, 10, 10, 10, -10],
     [-10, 0, 10, 10, 10, 10, 0, -10],
     [-10, 5, 5, 10, 10, 5, 5, -10],
@@ -287,7 +275,7 @@ bishopEvalBlack = [
 bishopEvalWhite = list(reversed(bishopEvalBlack))
 
 rookEvalBlack = [
-    [0, 0, 0, 5, 5, 0, 0, 0],
+    [0, -5, -5, 5, 5, -5, -5, 0],
     [-5, 0, 0, 0, 0, 0, 0, -5],
     [-5, 0, 0, 0, 0, 0, 0, -5],
     [-5, 0, 0, 0, 0, 0, 0, -5],
@@ -300,12 +288,12 @@ rookEvalWhite = list(reversed(rookEvalBlack))
 
 queenEval = [
     [-20, -10, -10, -5, -5, -10, -10, -20],
-    [-10, 0, 0, 0, 0, 0, 0, -10],
+    [-10, 0, 0, 5, 5, 0, 0, -10],
     [-10, 0, 5, 5, 5, 5, 0, -10],
-    [-5, 0, 5, 5, 5, 5, 0, -5],
-    [0, 0, 5, 5, 5, 5, 0, -5],
+    [10, 0, 5, 5, 5, 5, 0, -5],
+    [0, 0, 5, 5, 5, 5, 0, 10],
     [-10, 5, 5, 5, 5, 5, 0, -10],
-    [-10, 0, 5, 0, 0, 0, 0, -10],
+    [-10, 0, 5, 5, 5, 0, 0, -10],
     [-20, -10, -10, -5, -5, -10, -10, -20]
 ]
 

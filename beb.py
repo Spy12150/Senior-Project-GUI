@@ -6,10 +6,10 @@ import copy
 import time
 from TranspositionTable import TranspositionTable
 class beb:
-    def __init__(self, depth=3):
+    def __init__(self, depth):
         self.depth = depth
         self.list = MovesList()
-        self.transposition_table = TranspositionTable
+        self.transposition_table = TranspositionTable()
 
     def get_best_move(self, board, color):
 
@@ -21,10 +21,12 @@ class beb:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
                     return move
-                evaluation = self.minimax(boardcopy, self.depth, color)
+                evaluation = self.minimax(boardcopy, self.depth - 1, "b")
                 if evaluation > max_evaluation:
                     max_evaluation = evaluation
                     best_move = move
+                print(move)
+                print(evaluation)
             return best_move
         else:
             best_move = None
@@ -33,40 +35,42 @@ class beb:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
                     return move
-                evaluation = self.minimax(boardcopy, self.depth, color)
+                evaluation = self.minimax(boardcopy, self.depth - 1, "w")
                 if evaluation < min_evaluation:
                     min_evaluation = evaluation
                     best_move = move
+                print(move)
+                print(evaluation)
             return best_move
 
-    def minimax(self, position, depth, maximizing_player):
-        board = position
-        if (maximizing_player == "w"):
+    def minimax(self, board, depth, color):
+        board = board
+        if (color == "w"):
             otherplayer = "b"
         else:
             otherplayer = "w"
-        if depth == 0 or not self.list.get_legal_moves(board, otherplayer):
+        if depth == 0 or not self.list.get_legal_moves(board, color):
             return self.evaluate(board)
 
-        tt_entry = self.transposition_table.lookup(position)
+        tt_entry = self.transposition_table.lookup(board)
         if tt_entry is not None and tt_entry[1] >= depth:
             return tt_entry[0]
 
-        if maximizing_player == "w":
+        if color == "w":
             max_evaluation = -float('inf')
-            for move in self.list.get_legal_moves(position, maximizing_player):
-                boardcopy = self.Test_Move(move, copy.deepcopy(position))
+            for move in self.list.get_legal_moves(board, color):
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 evaluation = self.minimax(boardcopy, depth - 1, "b")
                 max_evaluation = max(max_evaluation, evaluation)
-            self.transposition_table.store(position, max_evaluation, depth) 
+            self.transposition_table.store(board, max_evaluation, depth) 
             return max_evaluation
         else:
             min_evaluation = float('inf')
-            for move in self.list.get_legal_moves(position, maximizing_player):
-                boardcopy = self.Test_Move(move, copy.deepcopy(position))
+            for move in self.list.get_legal_moves(board, color):
+                boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 evaluation = self.minimax(boardcopy, depth - 1, "w")
                 min_evaluation = min(min_evaluation, evaluation)
-            self.transposition_table.store(position, min_evaluation, depth) 
+            self.transposition_table.store(board, min_evaluation, depth) 
             return min_evaluation
     def piecesonboard(self, board):
         pieces = 0

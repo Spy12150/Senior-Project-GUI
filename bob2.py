@@ -11,6 +11,7 @@ class bob2:
         self.depth = depth
         self.list = MovesList()
         self.permeableboard = Board()
+        self.moves = 0
 
 
     def max_value(self, board, depth, alpha, beta):
@@ -53,10 +54,12 @@ class bob2:
         best_move = None
         alpha = float('-inf')
         beta = float('inf')
+        extraeval = 0
+        self.moves +=1
         if color == "w":
             max_score = float('-inf')
             legal_moves = self.list.get_legal_moves(boardcopy, "w")
-            extraeval = 0
+            
             if(len(legal_moves) < 10):
                 extraeval += 1
             if(self.piecesonboard(boardcopy) < 10):
@@ -123,7 +126,7 @@ class bob2:
                         best_move = move
                 beta = min(beta, score)
                 i += 1
-                print(f"\rProgress: {(i/n)*100}%", end='')
+                # print(f"\rProgress: {(i/n)*100}%", end='')
         return best_move
 
 
@@ -149,35 +152,66 @@ class bob2:
             for col in range(8):
                 piece = board.board[row][col]
                 if(piece == "wP"):
-                    score += pawnEvalWhite[row][col]
+                    if self.moves < 17:
+                        score += pawnEvalWhite[row][col]
+                    else:
+                        score += (7-row)*8
                     score+= 100
+                    if(board.board[row - 1][col] == "wP"):
+                        score -= 30
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
                 elif(piece == "bP"):
-                    score -= pawnEvalBlack[row][col]
+                    if self.moves < 17:
+                        score -= pawnEvalBlack[row][col]
+                    else:
+                        score -= row*8
                     score -= 100
+                    if board.board[row - 1][col] == "wP":
+                        score += 30
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "wQ"):
                     score += queenEval[row][col]
                     score +=900
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
+                    
                 elif(piece == "bQ"):
                     score -= queenEval[row][col]
                     score -=900
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "wR"):
                     score += rookEvalWhite[row][col]
                     score +=500
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
                 elif(piece == "bR"):
                     score -=  rookEvalBlack[row][col]
                     score -=500
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "wB"):
                     score += bishopEvalWhite[row][col]
                     score +=300
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
                 elif(piece == "wN"):
                     score += knightEval[row][col]
                     score +=300
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
                 elif(piece == "bB"):
                     score -= bishopEvalBlack[row][col]
                     score -= 300
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "bN"):
                     score -= knightEval[row][col]
                     score -=300
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "wK"):
                     if(self.piecesonboard(board) < 9):
                         score += kingEvalEndGameWhite[row][col]
@@ -185,15 +219,15 @@ class bob2:
                         score += kingEvalWhite[row][col]
                 elif(piece == "bK"):
                     if(self.piecesonboard(board) < 9):
-                        score += kingEvalEndGameBlack[row][col]
+                        score -= kingEvalEndGameBlack[row][col]
                     else:
-                        score += kingEvalBlack[row][col]
+                        score -= kingEvalBlack[row][col]
 
         
                     
-        if(self.list.get_legal_moves(board, "b") == [] and self.list.is_king_in_check(board, "b")):
+        if(self.list.get_legal_moves(copy.deepcopy(board), "b") == [] and self.list.is_king_in_check(copy.deepcopy(board), "b")):
             score = 999999
-        elif(self.list.get_legal_moves(board, "w") == [] and self.list.is_king_in_check(board, "w")):
+        elif(self.list.get_legal_moves(copy.deepcopy(board), "w") == [] and self.list.is_king_in_check(copy.deepcopy(board), "w")):
             score = -999999
             
         
@@ -241,7 +275,7 @@ pawnEvalBlack = [
     [0,  0,  0,  0,  0,  0,  0,  0],
     [5, 10, 10, -20, -20, 10, 10,  5],
     [5, -5, -10,  10,  10, -10, -5,  5],
-    [0,  0,  0, 20, 20,  0,  0,  0],
+    [0,  -10,  -10, 20, 20,  -10,  -10,  0],
     [5,  5, 10, 25, 25, 10,  5,  5],
     [10, 10, 20, 30, 30, 20, 10, 10],
     [50, 50, 50, 50, 50, 50, 50, 50],
@@ -296,7 +330,7 @@ queenEval = [
 ]
 
 kingEvalBlack = [
-    [20, 30, 10, 0, 0, 10, 30, 20],
+    [20, 30, -10, 0, 0, -10, 30, 20],
     [20, 20, 0, 0, 0, 0, 20, 20],
     [-10, -20, -20, -20, -20, -20, -20, -10],
     [20, -30, -30, -40, -40, -30, -30, -20],
