@@ -5,105 +5,71 @@ from Board import Board
 import copy
 import time
 from TranspositionTable import TranspositionTable
+import threading
+import multiprocessing
+import concurrent.futures
 class bob:
     def __init__(self, depth):
         self.depth = depth
         self.list = MovesList()
         self.transposition_table = TranspositionTable()
+        self.moves = 0
+        self.lock = threading.Lock()
+        
 
     def get_best_move(self, board, color):
-
         moves = self.list.get_legal_moves(board, color)
 
-        n = len(moves)
-            
-        i = 0
-        
+        # Create a list to store the results of the evaluations
+        results = [None] * len(moves)
 
+        print("start thread")
 
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Evaluate each move concurrently using the thread pool
+            for i, move in enumerate(moves):
+                executor.submit(self.evaluate_move, board, color, move, results, i)
+
+        print("starting")
+
+        # Find the best move(s) based on the evaluation results
         if color == "w":
-            best_move = None
             max_evaluation = -float('inf')
-            for move in moves:
-                
-                boardcopy = self.Test_Move(move, copy.deepcopy(board))
-                if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
-                    return move
-                if self.piecesonboard(boardcopy) < 4:
-                    evaluation = self.minimax(boardcopy, 6, "b")
-                else:
-                    evaluation = self.minimax_captures(boardcopy, 3, "b",self.evaluate(boardcopy))
-                i += 1
-                print(f"\rProgress: {(i/n)*100}%", end='')
+            best_moves = []
+            for i, (move, evaluation) in enumerate(results):
                 if evaluation > max_evaluation:
                     max_evaluation = evaluation
-                    best_move = move
-            return best_move
+                    best_moves = [move]
+                elif evaluation == max_evaluation:
+                    best_moves.append(move)
+            return random.choice(best_moves)
         else:
-            best_move = None
             min_evaluation = float('inf')
-            for move in moves:
-                boardcopy = self.Test_Move(move, copy.deepcopy(board))
-                if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
-                    return move
-                
-                if self.piecesonboard(boardcopy) < 4:
-                    evaluation = self.minimax(boardcopy, 6, "w")
-                else:
-                    evaluation = self.minimax_captures(boardcopy, 3, "w", self.evaluate(boardcopy))
-                i += 1
-                
-                print(f"\rProgress: {(i/n)*100}%", end='')
+            best_moves = []
+            for i, (move, evaluation) in enumerate(results):
                 if evaluation < min_evaluation:
                     min_evaluation = evaluation
-                    best_move = move
-            return best_move
-        
-    def minimax_captures(self, board, depth, color, initeval):
+                    best_moves = [move]
+                elif evaluation == min_evaluation:
+                    best_moves.append(move)
+            return random.choice(best_moves)
 
-        captures = self.list.get_captures(board, color)
-        
-        if len(captures) == 0 or depth == 0:
-            return self.evaluate(board)
 
-        if (color == "w"):
-            otherplayer = "b"
+    def evaluate_move(self, board, color, move, results, index):
+        boardcopy = self.Test_Move(move, copy.deepcopy(board))
+        if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
+            results[index] = (move, float('inf') if color == "w" else -float('inf'))
+            return
+        if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
+            results[index] = (move, -float('inf') if color == "w" else float('inf'))
+            return
+
+        if self.piecesonboard(boardcopy) < 4:
+            evaluation = self.minimax(boardcopy, 6, "b" if color == "w" else "w")
         else:
-            otherplayer = "w"
-        if color == "w":
-            max_evaluation = -float('inf')
-            for move in captures:
-                
-                boardcopy = self.Test_Move(move, copy.deepcopy(board))
-                if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
-                    return 999999
-                currenteval = self.evaluate(boardcopy)
-                if(currenteval < initeval):
-                    return currenteval
-                evaluation = self.minimax_captures(boardcopy, depth - 1, "b", initeval)
-                max_evaluation = max(max_evaluation, evaluation)
-
-            if(max_evaluation < initeval):
-                max_evaluation = initeval
-            self.transposition_table.store(board, max_evaluation, depth) 
-            return max_evaluation
-        else:
-            min_evaluation = float('inf')
-            for move in captures:
-                
-                boardcopy = self.Test_Move(move, copy.deepcopy(board))
-                if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
-                    return -999999
-                currenteval = self.evaluate(boardcopy)
-                if(currenteval > initeval):
-                    return currenteval
-                evaluation = self.minimax_captures(boardcopy, depth - 1, "w", initeval)                                                               
-                min_evaluation = min(min_evaluation, evaluation)
-            if(min_evaluation > initeval):
-                min_evaluation = initeval
-            self.transposition_table.store(board, min_evaluation, depth) 
-            return min_evaluation
-        
+            evaluation = self.minimax(boardcopy, 1, "b" if color == "w" else "w")
+        results[index] = (move, evaluation)
+            
 
     def minimax(self, board, depth, color):
         board = board
@@ -111,8 +77,10 @@ class bob:
             otherplayer = "b"
         else:
             otherplayer = "w"
-        if depth == 0 or not self.list.get_legal_moves(board, color):
-            return self.minimax_captures(board, depth, color)
+
+        moves = self.list.get_legal_moves(board, color)
+        if depth == 0 or not moves:
+            return self.evaluate(board)
 
         tt_entry = self.transposition_table.lookup(board)
         if tt_entry is not None and tt_entry[1] >= depth:
@@ -120,7 +88,7 @@ class bob:
 
         if color == "w":
             max_evaluation = -float('inf')
-            for move in self.list.get_legal_moves(board, color):
+            for move in moves:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 evaluation = self.minimax(boardcopy, depth - 1, "b")
                 max_evaluation = max(max_evaluation, evaluation)
@@ -128,7 +96,7 @@ class bob:
             return max_evaluation
         else:
             min_evaluation = float('inf')
-            for move in self.list.get_legal_moves(board, color):
+            for move in moves:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 evaluation = self.minimax(boardcopy, depth - 1, "w")
                 min_evaluation = min(min_evaluation, evaluation)
@@ -151,35 +119,66 @@ class bob:
             for col in range(8):
                 piece = board.board[row][col]
                 if(piece == "wP"):
-                    score += pawnEvalWhite[row][col]
+                    if self.moves < 17:
+                        score += pawnEvalWhite[row][col]
+                    else:
+                        score += (7-row)*8
                     score+= 100
+                    if(board.board[row - 1][col] == "wP"):
+                        score -= 30
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
                 elif(piece == "bP"):
-                    score -= pawnEvalBlack[row][col]
+                    if self.moves < 17:
+                        score -= pawnEvalBlack[row][col]
+                    else:
+                        score -= row*8
                     score -= 100
+                    if board.board[row - 1][col] == "wP":
+                        score += 30
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "wQ"):
                     score += queenEval[row][col]
                     score +=900
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
+                    
                 elif(piece == "bQ"):
                     score -= queenEval[row][col]
                     score -=900
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "wR"):
                     score += rookEvalWhite[row][col]
                     score +=500
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
                 elif(piece == "bR"):
                     score -=  rookEvalBlack[row][col]
                     score -=500
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "wB"):
                     score += bishopEvalWhite[row][col]
                     score +=300
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
                 elif(piece == "wN"):
                     score += knightEval[row][col]
                     score +=300
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score += 30
                 elif(piece == "bB"):
                     score -= bishopEvalBlack[row][col]
                     score -= 300
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "bN"):
                     score -= knightEval[row][col]
                     score -=300
+                    if(self.list.isTempo(piece, row, col, board)):
+                        score -= 30
                 elif(piece == "wK"):
                     if(self.piecesonboard(board) < 9):
                         score += kingEvalEndGameWhite[row][col]
@@ -241,9 +240,9 @@ class bob:
         return boardcopy
 pawnEvalBlack = [
     [0,  0,  0,  0,  0,  0,  0,  0],
-    [7, 5, 10, 10, 10, 10, 5,  7],
-    [5, 10, -10,  15,  15, -10, 10,  5],
-    [0,-10, -10,  -10, 20, 20,  -10,  -10,  0],
+    [5, 10, 10, -20, -20, 10, 10,  5],
+    [5, -5, -10,  10,  10, -10, -5,  5],
+    [0,  -10,  -10, 20, 20,  -10,  -10,  0],
     [5,  5, 10, 25, 25, 10,  5,  5],
     [10, 10, 20, 30, 30, 20, 10, 10],
     [50, 50, 50, 50, 50, 50, 50, 50],
@@ -254,7 +253,7 @@ pawnEvalWhite = list(reversed(pawnEvalBlack))
 knightEval = [
     [-50, -20, -30, -30, -30, -30, -20, -50],
     [-40, -20, 0, 0, 0, 0, -20, -40],
-    [-30, 0, 9, 15, 15, 9, 0, -30],
+    [-30, 0, 10, 15, 15, 10, 0, -30],
     [-30, 5, 15, 20, 20, 15, 5, -30],
     [-30, 0, 15, 20, 20, 15, 0, -30],
     [-30, 5, 10, 15, 15, 10, 5, -30],
@@ -264,7 +263,7 @@ knightEval = [
 
 bishopEvalBlack = [
     [-20, -10, -10, -10, -10, -10, -10, -20],
-    [-10, 10, 0, 0, 0, 0, 10, -10],
+    [-10, 5, 0, 0, 0, 0, 5, -10],
     [-10, 10, 10, 10, 10, 10, 10, -10],
     [-10, 0, 10, 10, 10, 10, 0, -10],
     [-10, 5, 5, 10, 10, 5, 5, -10],
@@ -275,7 +274,7 @@ bishopEvalBlack = [
 bishopEvalWhite = list(reversed(bishopEvalBlack))
 
 rookEvalBlack = [
-    [0, -5, -5, 5, 5, -5, -5, 0],
+    [0, 0, 0, 5, 5, 0, 0, 0],
     [-5, 0, 0, 0, 0, 0, 0, -5],
     [-5, 0, 0, 0, 0, 0, 0, -5],
     [-5, 0, 0, 0, 0, 0, 0, -5],
@@ -288,17 +287,17 @@ rookEvalWhite = list(reversed(rookEvalBlack))
 
 queenEval = [
     [-20, -10, -10, -5, -5, -10, -10, -20],
-    [-10, 0, 0, 5, 5, 0, 0, -10],
+    [-10, 0, 0, 0, 0, 0, 0, -10],
     [-10, 0, 5, 5, 5, 5, 0, -10],
-    [10, 0, 5, 5, 5, 5, 0, -5],
-    [0, 0, 5, 5, 5, 5, 0, 10],
+    [-5, 0, 5, 5, 5, 5, 0, -5],
+    [0, 0, 5, 5, 5, 5, 0, -5],
     [-10, 5, 5, 5, 5, 5, 0, -10],
-    [-10, 0, 5, 5, 5, 0, 0, -10],
+    [-10, 0, 5, 0, 0, 0, 0, -10],
     [-20, -10, -10, -5, -5, -10, -10, -20]
 ]
 
 kingEvalBlack = [
-    [20, 30, 10, 0, 0, 10, 30, 20],
+    [20, 30, -10, 0, 0, -10, 30, 20],
     [20, 20, 0, 0, 0, 0, 20, 20],
     [-10, -20, -20, -20, -20, -20, -20, -10],
     [20, -30, -30, -40, -40, -30, -30, -20],

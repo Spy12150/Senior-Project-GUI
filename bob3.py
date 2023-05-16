@@ -66,12 +66,8 @@ class bob3:
     
         
 
-    def minimax(self, board, depth, color):
+    def minimax(self, board, depth, color, alpha=-float('inf'), beta=float('inf')):
         board = board
-        if (color == "w"):
-            otherplayer = "b"
-        else:
-            otherplayer = "w"
 
         moves = self.list.get_legal_moves(board, color)
         if depth == 0 or not moves:
@@ -85,17 +81,29 @@ class bob3:
             max_evaluation = -float('inf')
             for move in moves:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
-                evaluation = self.minimax(boardcopy, depth - 1, "b")
+                if self.piecesonboard(boardcopy) < 4:
+                    evaluation = self.minimax(boardcopy, depth - 1, "b", alpha, beta)
+                else:
+                    evaluation = self.minimax(boardcopy, depth - 1, "b", alpha, beta)
                 max_evaluation = max(max_evaluation, evaluation)
-            self.transposition_table.store(board, max_evaluation, depth) 
+                alpha = max(alpha, max_evaluation)
+                if alpha >= beta:
+                    break
+            self.transposition_table.store(board, max_evaluation, depth)
             return max_evaluation
         else:
             min_evaluation = float('inf')
             for move in moves:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
-                evaluation = self.minimax(boardcopy, depth - 1, "w")
+                if self.piecesonboard(boardcopy) < 4:
+                    evaluation = self.minimax(boardcopy, depth - 1, "w", alpha, beta)
+                else:
+                    evaluation = self.minimax(boardcopy, depth - 1, "w", alpha, beta)
                 min_evaluation = min(min_evaluation, evaluation)
-            self.transposition_table.store(board, min_evaluation, depth) 
+                beta = min(beta, min_evaluation)
+                if alpha >= beta:
+                    break
+            self.transposition_table.store(board, min_evaluation, depth)
             return min_evaluation
     def piecesonboard(self, board):
         pieces = 0

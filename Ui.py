@@ -166,7 +166,7 @@ while games:
                     
 
                 elif(turn == "b"):
-                    move = bobtwo.get_best_move(copy.deepcopy(boardcopy), turn)
+                    move = bobthree.get_best_move(copy.deepcopy(boardcopy), turn)
                     # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
                     # move = list.get_legal_moves(boardcopy, turn)[random.randint(0, len(list.get_legal_moves(boardcopy, turn)) - 1)]
                     print(move)
@@ -176,7 +176,7 @@ while games:
                     
                 else:
                     # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
-                    move = bobthree.get_best_move(copy.deepcopy(boardcopy), turn)
+                    move = jeff.get_best_move(copy.deepcopy(boardcopy), turn)
                     print(move)
                     Moved = board.move(move, turn, moves)
 
