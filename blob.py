@@ -85,7 +85,7 @@ class ChessConverter:
             elif(element == "b"):
                 binary += "1"
 
-        return binary[:455]
+        return binary[:449]
     
     def result_to_binary(result):
         if(result == "1-0"):
@@ -129,6 +129,7 @@ def process_game(game):
 
 
 
+
 pgn_file = open("lichess_db_standard_rated_2017-02.pgn")
 
 # Specify the interval to start processing games
@@ -155,10 +156,10 @@ while True:
         fen_list = generate_fen(game)
         result = game.headers["Result"]
         converter = ChessConverter()
-        binaryResult =converter.result_to_binary(result)
+        binaryResult = converter.result_to_binary(result)
 
         for i, fen in enumerate(fen_list):
-            Fens.append(converter.boardtofen(fen))
+            Fens.append(np.array([int(j) for j in (converter.boardtofen(fen))]))
             Results.append(binaryResult)
 
     # Read the next line
@@ -173,18 +174,39 @@ pgn_file.close()
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts([first_455])
 
+
+
 # Convert text to sequences of tokens
 sequences = tokenizer.texts_to_sequences([first_455])
 
 # Pad sequences to a fixed length
-max_length = 455
+max_length = 449
 padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(sequences, maxlen=max_length)
 
 
 model = tf.keras.models.Sequential([
-    tf.keras.layers.InputLayer(455),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.InputLayer(449),
+    tf.keras.layers.Dense(512, activation='relu'),
+    tf.keras.layers.Dense(512, activation='relu'),
     tf.keras.layers.Dense(1),
 ])
+
+model.compile(
+    optimizer='adam',
+    loss= "mean_squared_error",
+    metrics=[accuracy])
+
+model.fit(
+    x = np.asarray(Fens),
+    y = np.asarray(Results),
+    epochs = 5,
+    batch_size = 100,
+    validation_split = 0.2
+)
+
+model.save("predictor.h5")
+
+
+
+
+
