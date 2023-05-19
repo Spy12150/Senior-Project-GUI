@@ -5,11 +5,15 @@ from Board import Board
 import copy
 import time
 from TranspositionTable import TranspositionTable
+import tensorflow as tf
+import numpy as np
 class beb:
     def __init__(self, depth):
         self.depth = depth
         self.list = MovesList()
         self.transposition_table = TranspositionTable()
+        self.model = tf.keras.models.load_model('predictor.h5')
+        self.converter = ChessConverter()
 
     def get_best_move(self, board, color):
 
@@ -21,7 +25,7 @@ class beb:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
                     return move
-                evaluation = self.minimax(boardcopy, self.depth - 1, "b")
+                evaluation = self.AIevaluate(boardcopy, "b")
                 if evaluation > max_evaluation:
                     max_evaluation = evaluation
                     best_move = move
@@ -35,13 +39,18 @@ class beb:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
                     return move
-                evaluation = self.minimax(boardcopy, self.depth - 1, "w")
+                evaluation = self.AIevaluate(boardcopy, "w")
                 if evaluation < min_evaluation:
                     min_evaluation = evaluation
                     best_move = move
                 print(move)
                 print(evaluation)
             return best_move
+        
+    
+    def AIevaluate(self, board, color):
+        fen = self.transposition_table.board_to_fen(board, color)
+        return self.model.predict(np.array([int(j) for j in (self.converter.boardtofen(fen))]))
 
     def minimax(self, board, depth, color):
         board = board
@@ -259,3 +268,94 @@ kingEvalEndGameBlack = [
 ]
 kingEvalEndGameWhite = list(reversed(kingEvalEndGameBlack))
 # fmt: on
+
+class ChessConverter:
+    @staticmethod
+    def boardtofen(fen):
+        binary = ''
+        for element in fen:
+            if(element == "P"):
+                binary += "0100000"
+            elif(element == "R"):
+                binary += "0010000"
+            elif(element == "N"):
+                binary += "0001000"
+            elif(element == "B"):
+                binary += "0000100"
+            elif(element == "Q"):
+                binary += "0000010"
+            elif(element == "K"):
+                binary += "0000001"
+            elif(element == "p"):
+                binary += "1100000"
+            elif(element == "r"):
+                binary += "1010000"
+            elif(element == "n"):
+                binary += "1001000"
+            elif(element == "b"):
+                binary += "1000100"
+            elif(element == "q"):
+                binary += "1000010"
+            elif(element == "k"):
+                binary += "1000001"
+
+            elif(element == "1"):
+                binary += "0000000"
+            elif(element == "2"):
+                binary += "0000000"
+                binary += "0000000"
+                
+            elif(element == "3"):
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+            elif(element == "4"):
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+            elif(element == "5"):
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+            elif(element == "6"):
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                
+            elif(element == "7"):
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+            elif(element == "8"):
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+                binary += "0000000"
+            elif(element == "w"):
+                binary += "0"
+            elif(element == "b"):
+                binary += "1"
+
+        return binary[:449]
+    
+    def result_to_binary(self, result):
+        if(result == "1-0"):
+            return 1
+        elif(result == "0-1"):
+            return -1
+        else:
+            return 0

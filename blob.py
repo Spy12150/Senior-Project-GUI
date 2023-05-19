@@ -87,7 +87,7 @@ class ChessConverter:
 
         return binary[:449]
     
-    def result_to_binary(result):
+    def result_to_binary(self, result):
         if(result == "1-0"):
             return 1
         elif(result == "0-1"):
@@ -143,12 +143,14 @@ Results = []
 
 while True:
     # Check if the current line is within the desired interval
-    print(f"\rProgress: {(current_line/183552715)*100}%", end='')
+    print(f"Progress: {(current_line/(183552715 * .004))*100}%")
 
     if (current_line + 1) % starting_line_interval == 0:
         game = chess.pgn.read_game(pgn_file)
 
         if game is None:
+            break
+        if current_line >= (183552715 * .004):
             break
 
         # Process each game here
@@ -171,17 +173,17 @@ while True:
     current_line += 1
 
 pgn_file.close()
-tokenizer = Tokenizer()
-tokenizer.fit_on_texts([first_455])
+# tokenizer = Tokenizer()
+# tokenizer.fit_on_texts([first_455])
 
 
 
-# Convert text to sequences of tokens
-sequences = tokenizer.texts_to_sequences([first_455])
+# # Convert text to sequences of tokens
+# sequences = tokenizer.texts_to_sequences([first_455])
 
-# Pad sequences to a fixed length
-max_length = 449
-padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(sequences, maxlen=max_length)
+# # Pad sequences to a fixed length
+# max_length = 449
+# padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(sequences, maxlen=max_length)
 
 
 model = tf.keras.models.Sequential([
@@ -193,8 +195,7 @@ model = tf.keras.models.Sequential([
 
 model.compile(
     optimizer='adam',
-    loss= "mean_squared_error",
-    metrics=[accuracy])
+    loss= "mean_squared_error")
 
 model.fit(
     x = np.asarray(Fens),

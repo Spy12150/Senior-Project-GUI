@@ -44,7 +44,7 @@ class TranspositionTable:
                 elif(piece == "bK"):
                     board.board[row][col] = "k"
         return board.board
-    def board_to_fen(self, board_array_copy):
+    def board_to_fen(self, board_array_copy, color):
         board_array = self.board_to_fenBoard(board_array_copy)
 
         # Convert the board array to a FEN string
@@ -60,9 +60,12 @@ class TranspositionTable:
                 piece = board_array[row][col]
 
                 if piece == '':
-                    fen_row += "x"
+                    empty_squares += 1
                 else:
-                    
+                    if empty_squares > 0:
+                        fen_row += str(empty_squares)
+                        empty_squares = 0
+
                     fen_row += piece
 
             if empty_squares > 0:
@@ -73,7 +76,11 @@ class TranspositionTable:
         fen = '/'.join(fen_parts)
 
         # Add the side to move, castling rights, en passant square, and halfmove clock
-        
+        # Assuming you have the necessary variables to retrieve this information
+        side_to_move = color  # Example: 'w' for white to move, 'b' for black to move
+
+        fen += f' {side_to_move}'
 
         return fen
+
 
