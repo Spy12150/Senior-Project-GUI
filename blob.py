@@ -89,9 +89,9 @@ class ChessConverter:
     
     def result_to_binary(self, result):
         if(result == "1-0"):
-            return 1
+            return 10
         elif(result == "0-1"):
-            return -1
+            return -10
         else:
             return 0
     
@@ -140,17 +140,19 @@ current_line = 1
 
 Fens = []
 Results = []
+c = 0
 
 while True:
     # Check if the current line is within the desired interval
-    print(f"Progress: {(current_line/(183552715 * .004))*100}%")
+    
 
     if (current_line + 1) % starting_line_interval == 0:
+        
         game = chess.pgn.read_game(pgn_file)
 
         if game is None:
             break
-        if current_line >= (183552715 * .004):
+        if c >= 1000000:
             break
 
         # Process each game here
@@ -160,9 +162,14 @@ while True:
         converter = ChessConverter()
         binaryResult = converter.result_to_binary(result)
 
-        for i, fen in enumerate(fen_list):
-            Fens.append(np.array([int(j) for j in (converter.boardtofen(fen))]))
-            Results.append(binaryResult)
+        numerated = enumerate(fen_list)
+
+        for i, fen in numerated:
+            if i > len(fen_list) - 25 and (int(game.headers.get("WhiteElo", 0)) >= 2000):
+                Fens.append(np.array([int(j) for j in (converter.boardtofen(fen))]))
+                Results.append(binaryResult)
+                c+=1
+                print(f"Progress: {round((c/(1000000))*100, 3)}%")
 
     # Read the next line
     line = pgn_file.readline()
@@ -188,8 +195,8 @@ pgn_file.close()
 
 model = tf.keras.models.Sequential([
     tf.keras.layers.InputLayer(449),
-    tf.keras.layers.Dense(512, activation='relu'),
-    tf.keras.layers.Dense(512, activation='relu'),
+    tf.keras.layers.Dense(1028, activation='relu'),
+    tf.keras.layers.Dense(1028, activation='relu'),
     tf.keras.layers.Dense(1),
 ])
 
@@ -200,12 +207,12 @@ model.compile(
 model.fit(
     x = np.asarray(Fens),
     y = np.asarray(Results),
-    epochs = 5,
+    epochs = 10,
     batch_size = 100,
     validation_split = 0.2
 )
 
-model.save("predictor.h5")
+model.save("predictor3.h5")
 
 
 

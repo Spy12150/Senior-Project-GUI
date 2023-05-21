@@ -12,45 +12,70 @@ class beb:
         self.depth = depth
         self.list = MovesList()
         self.transposition_table = TranspositionTable()
-        self.model = tf.keras.models.load_model('predictor.h5')
+        self.model = tf.keras.models.load_model('predictor3.h5')
         self.converter = ChessConverter()
+        self.moves = 0
 
     def get_best_move(self, board, color):
+
+        moves = self.list.get_legal_moves(board, color)
+
+        n = len(moves)
+            
+        i = 0
+        self.moves += 1
+
 
         if color == "w":
             best_move = None
             max_evaluation = -float('inf')
-            for move in self.list.get_legal_moves(board, color):
+            for move in moves:
                 
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 if(self.list.get_legal_moves(boardcopy, "b") == [] and self.list.is_king_in_check(boardcopy, "b")):
                     return move
-                evaluation = self.AIevaluate(boardcopy, "b")
+                if self.piecesonboard(boardcopy) < 4:
+                    evaluation = self.minimax(boardcopy, 6, "b")
+                else:
+                    evaluation = self.minimax(boardcopy, 0, "b")
+                i += 1
+                print(f"\rProgress: {(i/n)*100}%", end='')
                 if evaluation > max_evaluation:
                     max_evaluation = evaluation
                     best_move = move
-                print(move)
-                print(evaluation)
+                if evaluation == max_evaluation:
+                    best_move = random.choice([best_move, move])
             return best_move
         else:
             best_move = None
             min_evaluation = float('inf')
-            for move in self.list.get_legal_moves(board, color):
+            for move in moves:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 if(self.list.get_legal_moves(boardcopy, "w") == [] and self.list.is_king_in_check(boardcopy, "w")):
                     return move
-                evaluation = self.AIevaluate(boardcopy, "w")
+                
+                if self.piecesonboard(boardcopy) < 4:
+                    evaluation = self.minimax(boardcopy, 6, "w")
+                else:
+                    evaluation = self.minimax(boardcopy, 0, "w")
+                
+                i += 1
+                print(f"\rProgress: {(i/n)*100}%", end='')
                 if evaluation < min_evaluation:
                     min_evaluation = evaluation
                     best_move = move
-                print(move)
-                print(evaluation)
+                if evaluation == min_evaluation:
+                    best_move = random.choice([best_move, move])
             return best_move
         
     
     def AIevaluate(self, board, color):
         fen = self.transposition_table.board_to_fen(board, color)
-        return self.model.predict(np.array([int(j) for j in (self.converter.boardtofen(fen))]))
+        input_data = np.array([int(j) for j in (self.converter.boardtofen(fen))])
+        input_data = np.reshape(input_data, (-1, 449))
+        predictions = self.model.predict(input_data)
+
+        return predictions
 
     def minimax(self, board, depth, color):
         board = board
@@ -59,11 +84,7 @@ class beb:
         else:
             otherplayer = "w"
         if depth == 0 or not self.list.get_legal_moves(board, color):
-            return self.evaluate(board)
-
-        tt_entry = self.transposition_table.lookup(board)
-        if tt_entry is not None and tt_entry[1] >= depth:
-            return tt_entry[0]
+            return self.AIevaluate(board, color)
 
         if color == "w":
             max_evaluation = -float('inf')
@@ -71,7 +92,7 @@ class beb:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 evaluation = self.minimax(boardcopy, depth - 1, "b")
                 max_evaluation = max(max_evaluation, evaluation)
-            self.transposition_table.store(board, max_evaluation, depth) 
+            
             return max_evaluation
         else:
             min_evaluation = float('inf')
@@ -79,7 +100,7 @@ class beb:
                 boardcopy = self.Test_Move(move, copy.deepcopy(board))
                 evaluation = self.minimax(boardcopy, depth - 1, "w")
                 min_evaluation = min(min_evaluation, evaluation)
-            self.transposition_table.store(board, min_evaluation, depth) 
+            
             return min_evaluation
     def piecesonboard(self, board):
         pieces = 0
