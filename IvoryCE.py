@@ -1,7 +1,6 @@
 from MovesList import MovesList
 from Board import Board
 import copy
-import time
 from TranspositionTable import TranspositionTable
 
 class IvoryCE:
@@ -112,31 +111,46 @@ class IvoryCE:
         return piece_activity_score
     
     
-    def get_best_move(self, boardcopy, color):
+    def get_best_move(self, boardcopy, color, depth):
         board = copy.deepcopy(boardcopy)
-        start_time = time.time()
         best_move = None
         best_score = float('-inf') if color == "w" else float('inf')
         alpha = float('-inf')
         beta = float('inf')
         legal_moves = self.moves_list.get_legal_moves(boardcopy, color)
         n = len(legal_moves)
-    
-        for i, move in enumerate(legal_moves):
+
+        # Sort moves based on capture-centric move ordering
+        ordered_moves = []
+        capture_moves = []
+        quiet_moves = []
+        for move in legal_moves:
+            if self.moves_list.is_capture_move(move, board):
+                capture_moves.append(move)
+            else:
+                quiet_moves.append(move)
+        ordered_moves.extend(capture_moves)
+        ordered_moves.extend(quiet_moves)
+
+        for i, move in enumerate(ordered_moves):
             new_board = self.test_move(move, copy.deepcopy(board))
             if color == "w" and self.moves_list.get_legal_moves(new_board, "b") == [] and self.moves_list.is_king_in_check(new_board, "b"):
                 return move
             elif color == "b" and self.moves_list.get_legal_moves(new_board, "w") == [] and self.moves_list.is_king_in_check(new_board, "w"):
                 return move
-    
-            score = self.evaluate(new_board)
+
+            if depth == 0:
+                score = self.evaluate(new_board)
+            else:
+                score = -self.get_best_move(new_board, "b" if color == "w" else "w", depth - 1)
+
             if color == "w" and score > best_score:
                 best_score = score
                 best_move = move
             elif color == "b" and score < best_score:
                 best_score = score
                 best_move = move
-    
+
             if color == "w":
                 alpha = max(alpha, score)
                 if beta <= alpha:
@@ -145,10 +159,10 @@ class IvoryCE:
                 beta = min(beta, score)
                 if beta <= alpha:
                     break
-    
+
             progress = (i + 1) / n
             print(f"\rProgress: {progress * 100}%", end='')
-    
+
         return best_move
     
     
