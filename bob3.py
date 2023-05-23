@@ -73,9 +73,7 @@ class bob3:
         if depth == 0 or not moves:
             return self.evaluate(board)
 
-        tt_entry = self.transposition_table.lookup(board)
-        if tt_entry is not None and tt_entry[1] >= depth:
-            return tt_entry[0]
+       
 
         if color == "w":
             max_evaluation = -float('inf')
@@ -89,7 +87,7 @@ class bob3:
                 alpha = max(alpha, max_evaluation)
                 if alpha >= beta:
                     break
-            self.transposition_table.store(board, max_evaluation, depth)
+            
             return max_evaluation
         else:
             min_evaluation = float('inf')
@@ -103,7 +101,7 @@ class bob3:
                 beta = min(beta, min_evaluation)
                 if alpha >= beta:
                     break
-            self.transposition_table.store(board, min_evaluation, depth)
+            
             return min_evaluation
     def piecesonboard(self, board):
         pieces = 0

@@ -3,12 +3,12 @@ class TranspositionTable:
     def __init__(self):
         self.table = {}
 
-    def store(self, board, score, depth):
-        fen = self.board_to_fen(board)
+    def store(self, board, score, depth, color):
+        fen = self.board_to_fen(board, color)
         self.table[fen] = (score, depth)
 
-    def lookup(self, board):
-        fen = self.board_to_fen(board)
+    def lookup(self, board, color):
+        fen = self.board_to_fen(board, color)
         if fen in self.table:
             return self.table[fen]
         else:

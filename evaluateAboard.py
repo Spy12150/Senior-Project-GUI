@@ -98,30 +98,39 @@ class ChessConverter:
             return -1
         else:
             return 0
+        
+
 
 transposition_table = TranspositionTable()
 converter = ChessConverter()
 
-model = tf.keras.models.load_model('predictor3.h5')
+model = tf.keras.models.load_model('blobfish3.h5')
+
 
 board = Board()
 
 board.board = [
-        ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+        ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', '', 'bR'],
         ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
         ['', '', '', '', '', '', '', ''],
         ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', 'wK', '', '', '']
+        ['', '', '', 'wP', '', '', '', ''],
+        ['', '', '', '', '', 'wN', '', ''],
+        ['wP', 'wP', 'wP', '', '', 'wK', 'wP', 'wP'],
+        ['wR', 'wN', 'wB', 'wQ', '', 'wB', '', 'wR']
         ]
-
-fen = transposition_table.board_to_fen(board, "w")
+fen = transposition_table.board_to_fen(board, "b")
 input_data = np.array([int(j) for j in (converter.boardtofen(fen))])
 input_data = np.reshape(input_data, (-1, 449))
 predictions = model.predict(input_data)
 
+
+# Access the individual elements of the NumPy array
+
+
+# Combine the elements to form the move in algebraic notatio
+
 print(predictions)
+
 
 

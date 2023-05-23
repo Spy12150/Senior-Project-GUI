@@ -1,13 +1,9 @@
 import pygame
 from Board import Board
-from TreeEngine import TreeEngine
 import time
 from MovesList import MovesList
-from bob import bob
-from bob2 import bob2
 from bob3 import bob3
-from jef import jef
-from beb import beb
+from blobfish import blobfish
 
 
 import random
@@ -55,10 +51,7 @@ FONT = pygame.font.SysFont('calibri', 30)
 # scriptedmoves = ["e2e4", "e7e5", "g1f3", "b8c6", "f3e5"]
 scriptedmoves = []
 list = MovesList()
-bobtwo = bob2(2)
-bobone = bob(1)
-jeff = jef(3)
-bleb = beb(2)
+Blobfish = blobfish(2)
 bobthree = bob3(2)
 #  "c8g4", "g1f3", "b8c6", "d2d3", "e7e6", "c1g5", "f8b4", "b1c3", "g8f6"]
 
@@ -101,7 +94,6 @@ while games:
     print("enter moves in the notation: e2e4 (start pos + end pos_")
     turn = "w"
     movenum = 0
-    tree = TreeEngine(5)
     boards = []
 
     while running:
@@ -151,6 +143,7 @@ while games:
                         print("b" + " Wins!")
                         wwins +=1
                     running = False
+                    time.sleep(30)
                     moved = True
                     
                 elif(moves == []):
@@ -166,7 +159,7 @@ while games:
                     
 
                 elif(turn == "b"):
-                    move = bleb.get_best_move(copy.deepcopy(boardcopy), turn)
+                    move = Blobfish.get_best_move(copy.deepcopy(boardcopy), turn)
                     # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
                     # move = list.get_legal_moves(boardcopy, turn)[random.randint(0, len(list.get_legal_moves(boardcopy, turn)) - 1)]
                     print(move)
@@ -176,7 +169,7 @@ while games:
                     
                 else:
                     Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
-                    # move = jeff.get_best_move(copy.deepcopy(boardcopy), turn)
+                    # move = Blobfish.get_best_move(copy.deepcopy(boardcopy), turn)
                     # print(move)
                     # Moved = board.move(move, turn, moves)
 
