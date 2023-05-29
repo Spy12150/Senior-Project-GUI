@@ -429,8 +429,6 @@ class Board:
         return moves
         
 
-
-
     
     def move(self, move, color, legalmoves):
         
@@ -477,6 +475,45 @@ class Board:
             return True
         return False
         
+
+    def toFen(self):
+        fen = ""
+        for row in range(8):
+            for col in range(8):
+                piece = self.board[row][col]
+                if(piece == "wP"):
+                    fen += "P"
+                elif(piece == "bP"):
+                    fen += "p"
+                elif(piece == "wQ"):
+                    fen += "Q"
+                elif(piece == "bQ"):
+                    fen += "q"
+                elif(piece == "wR"):
+                    fen += "R"
+                elif(piece == "bR"):
+                    fen += "r"
+                elif(piece == "wB"):
+                    fen += "B"
+                elif(piece == "wN"):
+                    fen += "N"
+                elif(piece == "bB"):
+                    fen += "b"
+                elif(piece == "bN"):
+                    fen += "n"
+                elif(piece == "wK"):
+                    fen += "K"
+                elif(piece == "bK"):
+                    fen += "k"
+                else:
+                    if fen[-1].isnumeric() :
+                        fen[-1] = int(fen[-1]) + 1
+                    else:
+                        fen += "1"
+            fen += "/"
+
+        
+        return fen[:-1]
         
 
     #     print("it gets here")
