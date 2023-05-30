@@ -5,6 +5,8 @@ from MovesList import MovesList
 from bob3 import bob3
 from blobfish import blobfish
 
+from anders_bot.andersBot import AndersBot
+
 
 import random
 
@@ -53,6 +55,8 @@ scriptedmoves = []
 list = MovesList()
 Blobfish = blobfish(2)
 bobthree = bob3(2)
+
+anders = AndersBot(3)
 #  "c8g4", "g1f3", "b8c6", "d2d3", "e7e6", "c1g5", "f8b4", "b1c3", "g8f6"]
 
 # Draw the chess board
@@ -159,7 +163,7 @@ while games:
                     
 
                 elif(turn == "b"):
-                    move = Blobfish.get_best_move(copy.deepcopy(boardcopy), turn)
+                    move = anders.get_best_move(copy.deepcopy(boardcopy), turn)
                     # Moved = board.move(input("move in the manor of 'e2e4': "), turn, moves)
                     # move = list.get_legal_moves(boardcopy, turn)[random.randint(0, len(list.get_legal_moves(boardcopy, turn)) - 1)]
                     print(move)

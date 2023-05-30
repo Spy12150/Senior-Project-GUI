@@ -507,7 +507,7 @@ class Board:
                     fen += "k"
                 else:
                     if fen[-1].isnumeric() :
-                        fen[-1] = int(fen[-1]) + 1
+                        fen = fen[:-1] + str(int(fen[-1]) + 1)
                     else:
                         fen += "1"
             fen += "/"
