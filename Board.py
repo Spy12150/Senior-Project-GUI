@@ -468,10 +468,10 @@ class Board:
             
             if(piece=="bK" and move == "e8g8"):
                 self.board[0][7] = ''
-                self.board[0][5] = "wR"
-            if(piece=="wK" and move == "e8c8"):
+                self.board[0][5] = "bR"
+            if(piece=="bK" and move == "e8c8"):
                 self.board[0][0] = ''
-                self.board[0][3] = "wR"
+                self.board[0][3] = "bR"
             return True
         return False
         
