@@ -67,7 +67,7 @@ def moveIndexToMoveCoord(index):
 def movePredictionToMoveList(oneHotVector):
     maxEntry = tf.reduce_max(oneHotVector)
 
-    moves = tf.where(oneHotVector > maxEntry/4)
+    moves = tf.where(oneHotVector > maxEntry/2)
 
     return tf.map_fn(moveIndexToMoveCoord, moves)
 
