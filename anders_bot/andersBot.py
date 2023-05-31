@@ -3,6 +3,11 @@ import sys
 
 import tensorflow as tf
 
+import numpy as np
+
+from MovesList import MovesList
+
+
 # convert a piece to a dim 7 one hot vector defined by the piece map
 #
 # there is an additional flag that indicates whether or not this piece is white
@@ -29,23 +34,29 @@ def pieceToVector(piece: str, isBlackTurn: bool = False):
 # convert board fen to 8x8x7 matrix 
 # where a piece is given by a dim 7 vector defined in "piece to vector"
 #
-# additionally in order to distinguish whose turn it is there is an additional flag in the piece vector 
+# In order to distinguish whose turn it is there is an additional flag in the piece vector 
 # that defines whether that piece is (1) or is not (0) owned by the player whose turn it currently is
+# the board is also flipped on a black turn to make it easier for the machine learning model to determine
+# what the next move is
 def fenToMatrix(fen: str, isBlackTurn: bool = False):
     matrix = np.zeros((8,8,7))
     x = 0
-    y = 0
+    y = 7 if isBlackTurn else 0
+
+    yIncrement = -1 if isBlackTurn else 1
+
     for char in fen:
         if char.isnumeric():
             x += int(char)
         elif char == "/":
             x = 0
-            y += 1
+            y += yIncrement
         elif char == " ":
             break
         else:
             matrix[x,y,:] = pieceToVector(char, isBlackTurn)
             x += 1
+
     return matrix
 
 @tf.function
@@ -62,15 +73,6 @@ def moveIndexToMoveCoord(index):
     return tf.stack([fromX,fromY,toX,toY])
 
 
-# converts the 64*64 dim one hot move vector to "to" and "from" move coordinates on an 8x8 grid
-@tf.function
-def movePredictionToMoveList(oneHotVector):
-    maxEntry = tf.reduce_max(oneHotVector)
-
-    moves = tf.where(oneHotVector > maxEntry/2)
-
-    return tf.map_fn(moveIndexToMoveCoord, moves)
-
 @tf.function
 def dotRowElement(row):
     dotVec = tf.constant([1.0,1.0,1.0,1.0,1.0,1.0,-1.0], dtype=tf.float64)
@@ -81,21 +83,22 @@ boardVariable = tf.Variable(tf.zeros((8,8,7), dtype= tf.float64))
 
 # flips all white pieces to black pieces and black pieces to white pieces. 
 # this is used to determine whose turn it is
-@tf.function
+@tf.function(input_signature=(tf.TensorSpec(shape=[8,8,7], dtype=tf.float64),))
 def flipBoard(boardMatrix):
     ownershipFlip = tf.map_fn(dotRowElement, boardMatrix)
 
     boardVariable.assign(boardMatrix)
     boardVariable[:,:,6].assign(ownershipFlip)
 
-    return tf.convert_to_tensor(boardVariable)
+    return tf.image.flip_up_down(tf.convert_to_tensor(boardVariable))
 
-@tf.function
+@tf.function(input_signature=(tf.TensorSpec(shape=[8,8,7], dtype=tf.float64),tf.TensorSpec(shape=[4], dtype=tf.int32),))
 def preformMove(board, move):
-    xFrom = move[0,0]
-    yFrom = move[1,0]
-    xTo = move[2,0]
-    yTo = move[3,0]
+
+    xFrom = move[0]
+    yFrom = move[1]
+    xTo = move[2]
+    yTo = move[3]
 
     piece = board[xFrom,yFrom,:]
 
@@ -108,7 +111,19 @@ def preformMove(board, move):
     ownershipFlip = tf.map_fn(dotRowElement, tf.convert_to_tensor(boardVariable))
     boardVariable[:,:,6].assign(ownershipFlip)
 
-    return tf.convert_to_tensor(boardVariable)
+    return tf.image.flip_up_down(tf.convert_to_tensor(boardVariable))
+
+@tf.function
+def generateMoves(moveGenerator, board):
+
+    oneHotVector = moveGenerator(tf.expand_dims(board, axis = 0))[0]
+
+    maxEntry = tf.reduce_max(oneHotVector)
+    validEntries = tf.where(oneHotVector > maxEntry/3, oneHotVector, tf.multiply(tf.ones(64*64, dtype= tf.float32),-1))
+    values, indices = tf.math.top_k(validEntries,20)
+    moves = tf.boolean_mask(indices, tf.greater(values,-0.5))
+
+    return tf.map_fn(moveIndexToMoveCoord, moves)
 
 
 
@@ -119,24 +134,30 @@ class AndersBot:
         self.depth = depth
         self.evalModel = tf.keras.models.load_model("anders_bot/evaluator.h5")
         self.moveGenerator = tf.keras.models.load_model("anders_bot/movePredictor.h5")
+        self.list = MovesList()
 
 
-    def depthSearch(self,board,depth,isBlackTurn):
+    def evaluateMove(self,board,depth,isBlackTurn):
 
         if depth <= 0:
             if isBlackTurn:
                 board = flipBoard(board)
-            return self.evalModel.predict(np.array([board]))[0]
+            return self.evalModel(tf.expand_dims(board, axis = 0))[0]
     
-        moves = movePredictionToMoveList(
-            self.moveGenerator.predict(np.array([board]))[0]
-        )
-
+        moves = generateMoves(self.moveGenerator, board)
 
         # should filter moves for those that are valid
         evaluatedMoves = tf.map_fn(
-            lambda move: self.depthSearch(preformMove(board,move),depth-1,not isBlackTurn),
-            moves
+            lambda move: self.evaluateMove(
+                preformMove(
+                    board,
+                    move
+                ),
+                depth-1,
+                not isBlackTurn
+            ),
+            moves,
+            dtype= tf.float32
         )
 
         if isBlackTurn:
@@ -149,10 +170,17 @@ class AndersBot:
 
     def getUciMove(self, board, move, turn):
         letterCoords = "abcdefgh"
-        xFrom = tf.get_static_value(move[0,0])
-        yFrom = tf.get_static_value(move[1,0])
-        xTo = tf.get_static_value(move[2,0])
-        yTo = tf.get_static_value(move[3,0])
+
+        isBlackTurn = turn == "b"
+
+        xFrom = tf.get_static_value(move[0])
+        yFrom = tf.get_static_value(move[1])
+        xTo = tf.get_static_value(move[2])
+        yTo = tf.get_static_value(move[3])
+
+        if isBlackTurn:
+            yFrom = 7 - yFrom
+            yTo = 7 - yTo
 
         try: 
             if board.is_valid_move(7 - yFrom,xFrom,7 - yTo,xTo,turn):
@@ -169,18 +197,18 @@ class AndersBot:
 
     def backup(self, board, turn ):
         print("failed to be smart, choosing first legal move")
-        return board.get_legal_moves(turn)[0]
+        moves = self.list.get_legal_moves(board, turn)
+
+        return moves[0]
 
 
 
     def get_best_move(self,board, turn):
-
+        print(turn)
         isBlackTurn = turn == "b"
         boardMatrix = fenToMatrix(board.toFen(), isBlackTurn)
 
-        moves = movePredictionToMoveList(
-            self.moveGenerator.predict(np.array([boardMatrix]))[0]
-        )
+        moves = generateMoves(self.moveGenerator, boardMatrix)
 
         if moves.shape[0] == 1:
             move = moves[0]
@@ -190,8 +218,9 @@ class AndersBot:
             return uci if uci is not None else self.backup(board,turn)
             
         evaluatedMoves = tf.map_fn(
-            lambda move: self.depthSearch(preformMove(boardMatrix,move),self.depth,not isBlackTurn),
-            moves
+            lambda move: self.evaluateMove(preformMove(boardMatrix,move),self.depth,not isBlackTurn),
+            moves,
+            dtype= tf.float32
         )
 
         maxToMin = tf.argsort(evaluatedMoves)
@@ -204,10 +233,8 @@ class AndersBot:
 
         while(index < length and index >= 0):
             arg = maxToMin[index]
-            print(arg)
             move = moves[arg]
             uci = self.getUciMove(board,move,turn)
-
             if uci:
                 return uci
 
