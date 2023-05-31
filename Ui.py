@@ -56,7 +56,7 @@ list = MovesList()
 Blobfish = blobfish(2)
 bobthree = bob3(2)
 
-anders = AndersBot(3)
+anders = AndersBot(4)
 #  "c8g4", "g1f3", "b8c6", "d2d3", "e7e6", "c1g5", "f8b4", "b1c3", "g8f6"]
 
 # Draw the chess board
